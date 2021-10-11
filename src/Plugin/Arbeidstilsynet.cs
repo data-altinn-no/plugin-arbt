@@ -1,4 +1,4 @@
-﻿using dan.plugin.arbt.Config;
+﻿using Dan.Plugin.Arbt.Config;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -16,7 +16,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace dan.plugin.arbt
+namespace Dan.Plugin.Arbt
 {
     public class Arbeidstilsynet
     {

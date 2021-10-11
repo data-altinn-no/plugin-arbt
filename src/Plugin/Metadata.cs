@@ -1,4 +1,4 @@
-﻿using dan.plugin.arbt.Config;
+﻿using Dan.Plugin.Arbt.Config;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace dan.plugin.arbt
+namespace Dan.Plugin.Arbt
 {
     public class Metadata
     {

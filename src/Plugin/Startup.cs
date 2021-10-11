@@ -14,12 +14,12 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Nadobe.Common.Models;
 using Newtonsoft.Json;
-using dan.plugin.arbt.Config;
-using dan.plugin.arbt;
+using Dan.Plugin.Arbt.Config;
+using Dan.Plugin.Arbt;
 
-[assembly: FunctionsStartup(typeof(dan.plugin.arbt.Startup))]
+[assembly: FunctionsStartup(typeof(Dan.Plugin.Arbt.Startup))]
 
-namespace dan.plugin.arbt
+namespace Dan.Plugin.Arbt
 {
 
     public class Startup: FunctionsStartup
