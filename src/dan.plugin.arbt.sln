@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31717.71
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dan.plugin.arbt", "dan.plugin.arbt.csproj", "{1EAE92C0-FF12-432C-81F3-E64FA93832F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dan.Plugin.Arbt", "Dan.Plugin.Arbt.csproj", "{1EAE92C0-FF12-432C-81F3-E64FA93832F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
