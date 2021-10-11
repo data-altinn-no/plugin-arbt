@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Dan.Plugin.Arbt.Config
 {
-    public class ES_Constants
+    public class Constants
     {
 
     }
