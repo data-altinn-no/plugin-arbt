@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ES_ARBT_V3.Config
+namespace dan.plugin.arbt.Config
 {
     public class ApplicationSettings : IApplicationSettings
     {
@@ -27,7 +27,6 @@ namespace ES_ARBT_V3.Config
             {
                 return Environment.GetEnvironmentVariable("IsTest").ToLowerInvariant().Trim() == "true";
             }
-
         }
 
         public TimeSpan Breaker_RetryWaitTime

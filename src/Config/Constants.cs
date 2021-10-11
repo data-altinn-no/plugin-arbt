@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ES_ARBT_V3.Config
+namespace dan.plugin.arbt.Config
 {
     public class ES_Constants
     {

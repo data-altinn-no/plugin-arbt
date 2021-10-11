@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ES_ARBT_V3.Config
+namespace dan.plugin.arbt.Config
 {
     public interface IApplicationSettings
     {
@@ -13,7 +13,5 @@ namespace ES_ARBT_V3.Config
         string BemanningUrl { get; }
 
         string RenholdUrl { get; }
-
-
     }
 }
