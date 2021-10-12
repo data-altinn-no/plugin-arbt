@@ -14,12 +14,12 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Nadobe.Common.Models;
 using Newtonsoft.Json;
-using Dan.Plugin.Arbt.Config;
-using Dan.Plugin.Arbt;
+using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
+using Altinn.Dan.Plugin.Arbeidstilsynet;
 
-[assembly: FunctionsStartup(typeof(Dan.Plugin.Arbt.Startup))]
+[assembly: FunctionsStartup(typeof(Altinn.Dan.Plugin.Arbeidstilsynet.Startup))]
 
-namespace Dan.Plugin.Arbt
+namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
 
     public class Startup: FunctionsStartup

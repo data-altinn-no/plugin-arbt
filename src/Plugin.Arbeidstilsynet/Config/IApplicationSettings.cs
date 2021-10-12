@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Dan.Plugin.Arbt.Config
+namespace Altinn.Dan.Plugin.Arbeidstilsynet.Config
 {
     public interface IApplicationSettings
     {

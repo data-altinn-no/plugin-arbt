@@ -1,4 +1,4 @@
-﻿using Dan.Plugin.Arbt.Config;
+﻿using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -16,7 +16,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dan.Plugin.Arbt
+namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
     public class Arbeidstilsynet
     {
@@ -50,7 +50,7 @@ namespace Dan.Plugin.Arbt
         }
 
         [FunctionName("renholdsregisteret")]
-        public async Task<IActionResult> Renhold(
+        public async Task<IActionResult> Renhold( 
          [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
          ILogger log)
         {

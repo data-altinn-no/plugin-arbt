@@ -1,4 +1,4 @@
-﻿using Dan.Plugin.Arbt.Config;
+﻿using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dan.Plugin.Arbt
+namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
     public class Metadata
     {
