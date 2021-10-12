@@ -18,14 +18,14 @@ using System.Threading.Tasks;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
-    public class Arbeidstilsynet
+    public class Main
     {
         private ILogger _logger;
         private HttpClient _client;
         private ApplicationSettings _settings;
         private EvidenceSourceMetadata _metadata;
 
-        public Arbeidstilsynet(IHttpClientFactory httpClientFactory, IApplicationSettings settings)
+        public Main(IHttpClientFactory httpClientFactory, IApplicationSettings settings)
         {
             _client = httpClientFactory.CreateClient("SafeHttpClient");
             _settings = (ApplicationSettings)settings;
