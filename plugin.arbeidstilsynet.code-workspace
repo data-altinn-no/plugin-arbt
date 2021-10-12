@@ -1,10 +1,10 @@
 {
     "folders": [
       {
-        "path": "src/Plugin.Arbeidstilsynet"
+        "path": "src/Altinn.Dan.Plugin.Arbeidstilsynet"
       },
       {
-        "path": "test/Plugin.Arbeidstilsynet.Test"
+        "path": "test/Altinn.Dan.Plugin.Arbeidstilsynet.Test"
       }
     ],
     "extensions": {
