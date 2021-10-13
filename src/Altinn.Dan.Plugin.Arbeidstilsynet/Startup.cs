@@ -1,21 +1,13 @@
-﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nadobe.Common.Util;
 using Polly;
-using Polly.Caching;
 using Polly.Caching.Distributed;
-using Polly.Caching.Serialization.Json;
 using Polly.Extensions.Http;
 using Polly.Registry;
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using Nadobe.Common.Models;
-using Newtonsoft.Json;
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
-using Altinn.Dan.Plugin.Arbeidstilsynet;
 
 [assembly: FunctionsStartup(typeof(Altinn.Dan.Plugin.Arbeidstilsynet.Startup))]
 

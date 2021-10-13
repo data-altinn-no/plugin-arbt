@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet.Config
 {
@@ -11,7 +9,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet.Config
         TimeSpan Breaker_OpenCircuitTime { get; }
         bool IsTest { get; }
         string BemanningUrl { get; }
-
         string RenholdUrl { get; }
     }
 }

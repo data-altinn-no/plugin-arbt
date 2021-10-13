@@ -1,17 +1,7 @@
-﻿using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Logging;
-using Nadobe;
+using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Nadobe.Common.Interfaces;
 using Nadobe.Common.Models;
-using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
@@ -28,7 +18,50 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
         public List<EvidenceCode> GetEvidenceCodes()
         {
-            var a = new List<EvidenceCode>();
+            var a = new List<EvidenceCode>() { new EvidenceCode()
+            {
+                EvidenceCodeName = "Bemanningsforetakregisteret",
+                EvidenceSource = EvidenceSourceMetadata.SOURCE,
+                ServiceContext = "eBevis",
+                AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,
+                Values = new List<EvidenceValue>()
+                {
+                    new EvidenceValue()
+                    {
+                        EvidenceValueName = "Organisasjonsnummer",
+                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                    },
+                    new EvidenceValue()
+                    {
+                        EvidenceValueName = "Godkjenningsstatus",
+                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                    }
+                }
+            }, new EvidenceCode()
+            {
+                EvidenceCodeName = "Renholdsregisteret",
+                EvidenceSource = EvidenceSourceMetadata.SOURCE,
+                ServiceContext = "eBevis",
+                AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,
+                Values = new List<EvidenceValue>()
+                {
+                    new EvidenceValue()
+                    {
+                        EvidenceValueName = "Organisasjonsnummer",
+                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                    },
+                    new EvidenceValue()
+                    {
+                        EvidenceValueName = "Status",
+                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                    },
+                    new EvidenceValue()
+                    {
+                        EvidenceValueName = "StatusEndret",
+                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.DateTime
+                    }
+                }
+            } };
 
             return a;
         }
@@ -36,7 +69,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
     public class EvidenceSourceMetadata : IEvidenceSourceMetadata
     {
-        public const string SourceEnhetsregisteret = "Arbeidstilsynet";
+        public const string SOURCE = "Arbeidstilsynet";
 
         public const int ERROR_ORGANIZATION_NOT_FOUND = 1;
 

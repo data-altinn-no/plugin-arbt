@@ -1,10 +1,11 @@
-﻿using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
+using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Nadobe;
+using Nadobe.Common.Exceptions;
 using Nadobe.Common.Models;
 using Nadobe.Common.Util;
 using Newtonsoft.Json;
@@ -13,7 +14,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
@@ -32,7 +32,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             _metadata = new EvidenceSourceMetadata(_settings);
         }
 
-        [FunctionName("bemanningsforetakregisteret")]
+        [FunctionName("Bemanningsforetakregisteret")]
         public async Task<IActionResult> Bemanning(
            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
            ILogger log)
@@ -44,12 +44,18 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             return await EvidenceSourceResponse.CreateResponse(req, () => GetEvidenceValuesBemanning(evidenceHarvesterRequest));
         }
 
-        private Task<List<EvidenceValue>> GetEvidenceValuesBemanning(EvidenceHarvesterRequest evidenceHarvesterRequest)
+        private async Task<List<EvidenceValue>> GetEvidenceValuesBemanning(EvidenceHarvesterRequest evidenceHarvesterRequest)
         {
-            throw new NotImplementedException();
+            dynamic content = await MakeRequest(string.Format(_settings.BemanningUrl, evidenceHarvesterRequest.OrganizationNumber), evidenceHarvesterRequest.OrganizationNumber);
+
+            var ecb = new EvidenceBuilder(_metadata, "Bemanningsforetakregisteret");
+            ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue($"Godkjenningsstatus", content.Godkjenningsstatus, EvidenceSourceMetadata.SOURCE);
+
+            return ecb.GetEvidenceValues();
         }
 
-        [FunctionName("renholdsregisteret")]
+        [FunctionName("Renholdsregisteret")]
         public async Task<IActionResult> Renhold( 
          [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
          ILogger log)
@@ -61,13 +67,47 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             return await EvidenceSourceResponse.CreateResponse(req, () => GetEvidenceValuesRenhold(evidenceHarvesterRequest));
         }
 
-        private Task<List<EvidenceValue>> GetEvidenceValuesRenhold(EvidenceHarvesterRequest evidenceHarvesterRequest)
+        private async Task<List<EvidenceValue>> GetEvidenceValuesRenhold(EvidenceHarvesterRequest evidenceHarvesterRequest)
         {
-            throw new NotImplementedException();
+            dynamic content = await MakeRequest(string.Format(_settings.RenholdUrl, evidenceHarvesterRequest.OrganizationNumber), evidenceHarvesterRequest.OrganizationNumber);
+
+            var ecb = new EvidenceBuilder(_metadata, "Renholdsregisteret");            
+            ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue($"Status", content.Status, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue($"StatusEndret", Convert.ToDateTime(content.StatusEndret), EvidenceSourceMetadata.SOURCE);
+            
+            return ecb.GetEvidenceValues();
         }
 
-        [FunctionName(Constants.EvidenceSourceMetadataFunctionName)]
-        public async Task<HttpResponseMessage> Run(
+        private async Task<dynamic> MakeRequest(string target, string organizationNumber)
+        {
+            HttpResponseMessage result = null;
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, target);
+                result = await _client.SendAsync(request);
+
+            } catch (HttpRequestException ex)
+            {
+                throw new EvidenceSourcePermanentServerException(EvidenceSourceMetadata.ERROR_CCR_UPSTREAM_ERROR, null, ex);
+            }
+
+            if (result.StatusCode == HttpStatusCode.NotFound)
+            {
+                throw new EvidenceSourcePermanentClientException(EvidenceSourceMetadata.ERROR_ORGANIZATION_NOT_FOUND, $"{organizationNumber} could not be found");
+            }
+
+            var response = JsonConvert.DeserializeObject(await result.Content.ReadAsStringAsync());
+
+            if (response == null)
+                throw new EvidenceSourcePermanentServerException(EvidenceSourceMetadata.ERROR_CCR_UPSTREAM_ERROR, "Did not understand the data model returned from upstream source");
+
+            return response;
+
+        }
+
+    [FunctionName(Constants.EvidenceSourceMetadataFunctionName)]
+        public async Task<HttpResponseMessage> Metadata(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequestMessage req, ILogger log)
         {
             var response = new HttpResponseMessage()
