@@ -1,29 +1,28 @@
-using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Extensions.Logging;
-using Nadobe;
-using Nadobe.Common.Exceptions;
-using Nadobe.Common.Models;
-using Nadobe.Common.Util;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Logging;
+using Nadobe;
+using Nadobe.Common.Exceptions;
+using Nadobe.Common.Models;
+using Nadobe.Common.Util;
+using Newtonsoft.Json;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
     public class Main
     {
         private ILogger _logger;
-        private HttpClient _client;
-        private ApplicationSettings _settings;
-        private EvidenceSourceMetadata _metadata;
+        private readonly HttpClient _client;
+        private readonly ApplicationSettings _settings;
+        private readonly EvidenceSourceMetadata _metadata;
 
         public Main(IHttpClientFactory httpClientFactory, IApplicationSettings settings)
         {
@@ -32,21 +31,26 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             _metadata = new EvidenceSourceMetadata(_settings);
         }
 
-        [FunctionName("Bemanningsforetakregisteret")]
-        public async Task<IActionResult> Bemanning(
-           [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
-           ILogger log)
+        [Function("Bemanningsforetakregisteret")]
+        public async Task<HttpResponseData> Bemanning(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
+            HttpRequestData req, FunctionContext context)
         {
-            _logger = log;
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            _logger = context.GetLogger<Main>();
+            _logger.LogInformation("Running func 'Bemanning'");
+            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var evidenceHarvesterRequest = JsonConvert.DeserializeObject<EvidenceHarvesterRequest>(requestBody);
 
-            return await EvidenceSourceResponse.CreateResponse(req, () => GetEvidenceValuesBemanning(evidenceHarvesterRequest));
+            var actionResult = await EvidenceSourceResponse.CreateResponse(null, () => GetEvidenceValuesBemanning(evidenceHarvesterRequest)) as ObjectResult;
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(actionResult?.Value);
+            return response;
         }
 
         private async Task<List<EvidenceValue>> GetEvidenceValuesBemanning(EvidenceHarvesterRequest evidenceHarvesterRequest)
         {
-            dynamic content = await MakeRequest(string.Format(_settings.BemanningUrl, evidenceHarvesterRequest.OrganizationNumber), evidenceHarvesterRequest.OrganizationNumber);
+            dynamic content = await MakeRequest(string.Format(_settings.BemanningUrl, evidenceHarvesterRequest.OrganizationNumber),
+                evidenceHarvesterRequest.OrganizationNumber);
 
             var ecb = new EvidenceBuilder(_metadata, "Bemanningsforetakregisteret");
             ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
@@ -55,27 +59,32 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             return ecb.GetEvidenceValues();
         }
 
-        [FunctionName("Renholdsregisteret")]
-        public async Task<IActionResult> Renhold( 
-         [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
-         ILogger log)
+        [Function("Renholdsregisteret")]
+        public async Task<HttpResponseData> Renhold(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
+            HttpRequestData req, FunctionContext context)
         {
-            _logger = log;
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            _logger = context.GetLogger<Main>();
+            _logger.LogInformation("Running func 'Renhold'");
+            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var evidenceHarvesterRequest = JsonConvert.DeserializeObject<EvidenceHarvesterRequest>(requestBody);
 
-            return await EvidenceSourceResponse.CreateResponse(req, () => GetEvidenceValuesRenhold(evidenceHarvesterRequest));
+            var actionResult = await EvidenceSourceResponse.CreateResponse(null, () => GetEvidenceValuesRenhold(evidenceHarvesterRequest)) as ObjectResult;
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(actionResult?.Value);
+            return response;
         }
 
         private async Task<List<EvidenceValue>> GetEvidenceValuesRenhold(EvidenceHarvesterRequest evidenceHarvesterRequest)
         {
-            dynamic content = await MakeRequest(string.Format(_settings.RenholdUrl, evidenceHarvesterRequest.OrganizationNumber), evidenceHarvesterRequest.OrganizationNumber);
+            dynamic content = await MakeRequest(string.Format(_settings.RenholdUrl, evidenceHarvesterRequest.OrganizationNumber),
+                evidenceHarvesterRequest.OrganizationNumber);
 
-            var ecb = new EvidenceBuilder(_metadata, "Renholdsregisteret");            
+            var ecb = new EvidenceBuilder(_metadata, "Renholdsregisteret");
             ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
             ecb.AddEvidenceValue($"Status", content.Status, EvidenceSourceMetadata.SOURCE);
             ecb.AddEvidenceValue($"StatusEndret", Convert.ToDateTime(content.StatusEndret), EvidenceSourceMetadata.SOURCE);
-            
+
             return ecb.GetEvidenceValues();
         }
 
@@ -86,8 +95,8 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, target);
                 result = await _client.SendAsync(request);
-
-            } catch (HttpRequestException ex)
+            }
+            catch (HttpRequestException ex)
             {
                 throw new EvidenceSourcePermanentServerException(EvidenceSourceMetadata.ERROR_CCR_UPSTREAM_ERROR, null, ex);
             }
@@ -98,30 +107,23 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             }
 
             var response = JsonConvert.DeserializeObject(await result.Content.ReadAsStringAsync());
-
             if (response == null)
+            {
                 throw new EvidenceSourcePermanentServerException(EvidenceSourceMetadata.ERROR_CCR_UPSTREAM_ERROR, "Did not understand the data model returned from upstream source");
+            }
 
             return response;
-
         }
 
-    [FunctionName(Constants.EvidenceSourceMetadataFunctionName)]
-        public async Task<HttpResponseMessage> Metadata(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequestMessage req, ILogger log)
+        [Function(Constants.EvidenceSourceMetadataFunctionName)]
+        public async Task<HttpResponseData> Metadata(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
+            HttpRequestData req, FunctionContext context)
         {
-            var response = new HttpResponseMessage()
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(JsonConvert.SerializeObject(_metadata.GetEvidenceCodes(), typeof(List<EvidenceCode>), new JsonSerializerSettings
-                {
-                    TypeNameHandling = TypeNameHandling.Auto,
-                    NullValueHandling = NullValueHandling.Ignore
-                })),
-                RequestMessage = req
-            };
-
-
+            _logger = context.GetLogger<Main>();
+            _logger.LogInformation($"Running metadata for {Constants.EvidenceSourceMetadataFunctionName}");
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            await response.WriteAsJsonAsync(_metadata.GetEvidenceCodes());
             return response;
         }
     }

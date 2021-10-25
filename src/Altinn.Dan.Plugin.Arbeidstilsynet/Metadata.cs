@@ -14,54 +14,56 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             _settings = (ApplicationSettings)settings;
         }
 
-
-
         public List<EvidenceCode> GetEvidenceCodes()
         {
-            var a = new List<EvidenceCode>() { new EvidenceCode()
+            var a = new List<EvidenceCode>()
             {
-                EvidenceCodeName = "Bemanningsforetakregisteret",
-                EvidenceSource = EvidenceSourceMetadata.SOURCE,
-                ServiceContext = "eBevis",
-                AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,
-                Values = new List<EvidenceValue>()
+                new EvidenceCode()
                 {
-                    new EvidenceValue()
+                    EvidenceCodeName = "Bemanningsforetakregisteret",
+                    EvidenceSource = EvidenceSourceMetadata.SOURCE,
+                    ServiceContext = "eBevis",
+                    AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,
+                    Values = new List<EvidenceValue>()
                     {
-                        EvidenceValueName = "Organisasjonsnummer",
-                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
-                    },
-                    new EvidenceValue()
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "Organisasjonsnummer",
+                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                        },
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "Godkjenningsstatus",
+                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                        }
+                    }
+                },
+                new EvidenceCode()
+                {
+                    EvidenceCodeName = "Renholdsregisteret",
+                    EvidenceSource = EvidenceSourceMetadata.SOURCE,
+                    ServiceContext = "eBevis",
+                    AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,
+                    Values = new List<EvidenceValue>()
                     {
-                        EvidenceValueName = "Godkjenningsstatus",
-                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "Organisasjonsnummer",
+                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                        },
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "Status",
+                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                        },
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "StatusEndret",
+                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.DateTime
+                        }
                     }
                 }
-            }, new EvidenceCode()
-            {
-                EvidenceCodeName = "Renholdsregisteret",
-                EvidenceSource = EvidenceSourceMetadata.SOURCE,
-                ServiceContext = "eBevis",
-                AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,
-                Values = new List<EvidenceValue>()
-                {
-                    new EvidenceValue()
-                    {
-                        EvidenceValueName = "Organisasjonsnummer",
-                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
-                    },
-                    new EvidenceValue()
-                    {
-                        EvidenceValueName = "Status",
-                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
-                    },
-                    new EvidenceValue()
-                    {
-                        EvidenceValueName = "StatusEndret",
-                        ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.DateTime
-                    }
-                }
-            } };
+            };
 
             return a;
         }
