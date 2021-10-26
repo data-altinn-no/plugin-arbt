@@ -36,7 +36,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequestData req, FunctionContext context)
         {
-            _logger = context.GetLogger<Main>();
+            _logger = context.GetLogger(context.FunctionDefinition.Name);
             _logger.LogInformation("Running func 'Bemanning'");
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var evidenceHarvesterRequest = JsonConvert.DeserializeObject<EvidenceHarvesterRequest>(requestBody);
@@ -64,7 +64,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequestData req, FunctionContext context)
         {
-            _logger = context.GetLogger<Main>();
+            _logger = context.GetLogger(context.FunctionDefinition.Name);
             _logger.LogInformation("Running func 'Renhold'");
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var evidenceHarvesterRequest = JsonConvert.DeserializeObject<EvidenceHarvesterRequest>(requestBody);
@@ -120,7 +120,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
             HttpRequestData req, FunctionContext context)
         {
-            _logger = context.GetLogger<Main>();
+            _logger = context.GetLogger(context.FunctionDefinition.Name);
             _logger.LogInformation($"Running metadata for {Constants.EvidenceSourceMetadataFunctionName}");
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(_metadata.GetEvidenceCodes());
