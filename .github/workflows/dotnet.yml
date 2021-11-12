@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  ROOT_SOLUTION_PATH: /
+  ROOT_SOLUTION_PATH: ./
 
 jobs:
   build:
