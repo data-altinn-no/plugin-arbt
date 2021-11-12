@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get lates shit
+      - name: Get the latest source code
         uses: actions/checkout@v2
 
       - name: Setup .NET
