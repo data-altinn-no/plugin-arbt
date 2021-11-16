@@ -49,17 +49,18 @@ jobs:
       - name: 'Publish artifact'
         uses: actions/upload-artifact@v2
         with:
-          name: dan-plugin-arbt
+          name: published-app
           path: './app/published-app'
 
   deploy-dev:
     runs-on: ubuntu-latest
+    environment: 'dev'
     needs: build-and-publish
     steps:
       - name: 'Download artifact'
         uses: actions/download-artifact@v2
         with:
-          name: dan-plugin-arbt
+          name: published-app
           path: './published-app'
 
       - name: 'Deploy to dev'
