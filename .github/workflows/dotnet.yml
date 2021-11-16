@@ -12,7 +12,10 @@ on:
 
 env:
   ROOT_SOLUTION_PATH: ./
+  AZURE_FUNCTIONAPP_NAME: func-esarbt-test-dev # set this to the name of your azure function app resource
+  AZURE_FUNCTION_PROJ_PATH: src/Altinn.Dan.Plugin.Arbeidstilsynet  # set this to the path to your function app project
   AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json
+  BUILD_CONFIGURATION: 'Release'    # set this to the appropriate build configuration
   DOTNET_VERSION: '6.0.x' 
 
 jobs:
@@ -37,3 +40,7 @@ jobs:
           dotnet build --no-restore
           dotnet test --no-build --verbosity normal
         working-directory: ${{ env.ROOT_SOLUTION_PATH }}
+
+      - name: Build Function App for Release
+        run: dotnet build --configuration '${{ env.BUILD_CONFIGURATION }}' --output ./output
+        working-directory: ${{ env.AZURE_FUNCTION_PROJ_PATH }}
