@@ -12,6 +12,8 @@ on:
 
 env:
   ROOT_SOLUTION_PATH: ./
+  AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json
+  DOTNET_VERSION: '6.0.x' 
 
 jobs:
   build:
@@ -24,16 +26,14 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          source-url: ${{ env.AZURE_ARTIFACTS_FEED_URL }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
 
-      - name: Restore dependencies
-        run: dotnet restore
-        working-directory: ${{ env.ROOT_SOLUTION_PATH }}
-
-      - name: Build for testing
-        run: dotnet build --no-restore
-        working-directory: ${{ env.ROOT_SOLUTION_PATH }}
-
-      - name: Test
-        run: dotnet test --no-build --verbosity normal
+      - name: Restore, build & test
+        run: |
+          dotnet restore
+          dotnet build --no-restore
+          dotnet test --no-build --verbosity normal
         working-directory: ${{ env.ROOT_SOLUTION_PATH }}
