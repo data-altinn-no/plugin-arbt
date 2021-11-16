@@ -43,14 +43,14 @@ jobs:
       - name: 'Build and publish Function App for Release'
         run: |
           dotnet build --configuration '${{ env.BUILD_CONFIGURATION }}'
-          dotnet publish -c '${{ env.BUILD_CONFIGURATION }}' -o './published-app'
+          dotnet publish -c '${{ env.BUILD_CONFIGURATION }}' --no-restore -o './published-app'
         working-directory: ${{ env.AZURE_FUNCTION_PROJ_PATH }}
 
       - name: 'Publish artifact'
         uses: actions/upload-artifact@v2
         with:
           name: dan-plugin-arbt
-          path: './published-app'
+          path: ${{ env.AZURE_FUNCTION_PROJ_PATH }}/published-app
 
   deploy-dev:
     runs-on: ubuntu-latest
