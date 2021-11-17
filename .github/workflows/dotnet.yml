@@ -57,6 +57,11 @@ jobs:
     environment: 'dev'
     needs: build-and-publish
     steps:
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
       - name: 'Download artifact'
         uses: actions/download-artifact@v2
         with:
@@ -64,7 +69,7 @@ jobs:
           path: './published-app'
 
       - name: 'Deploy to dev'
-        uses: Azure/functions-action@v1
+        uses: azure/functions-action@v1
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: './published-app'
@@ -82,7 +87,7 @@ jobs:
           path: './published-app'
 
       - name: 'Deploy to staging'
-        uses: Azure/functions-action@v1
+        uses: azure/functions-action@v1
         with:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           package: './published-app'
