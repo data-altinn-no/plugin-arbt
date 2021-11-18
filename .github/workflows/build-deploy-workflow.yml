@@ -71,7 +71,7 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-latest
     environment: 'staging'
-    needs: build-and-publish
+    needs: deploy-dev
     steps:
       - uses: actions/checkout@v2
       - name: 'Deploy to staging'
@@ -84,17 +84,15 @@ jobs:
   swap-staging-production:
     runs-on: ubuntu-latest
     environment: 'production'
-    needs: [build-and-publish, deploy-dev]
+    needs: deploy-staging
     steps:
       - name: 'Login via Azure CLI'
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: 'Swap staging and production'
         run: |
           az webapp deployment slot swap -g '${{ env.RESOURCE_GROUP_PROD }}' -n '${{ env.FUNCTIONAPP_NAME_PROD }}' --slot 'staging' --target-slot 'production'
-
       - name: 'Azure logout'
         run: |
           az logout
@@ -102,7 +100,7 @@ jobs:
   redeploy-staging:
     runs-on: ubuntu-latest
     environment: 'staging'
-    needs: [build-and-publish, deploy-dev, swap-dev-qa]
+    needs: swap-staging-production
     steps:
       - uses: actions/checkout@v2
       - name: 'Redeploy to staging'
