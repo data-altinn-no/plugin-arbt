@@ -60,6 +60,7 @@ jobs:
     environment: 'dev'
     needs: build-and-publish
     steps:
+      - uses: actions/checkout@v2
       - name: 'Deploy to dev'
         uses: ./.github/workflows/composite/deploy
         with:
@@ -90,6 +91,7 @@ jobs:
     environment: 'dev'
     needs: [build-and-publish, deploy-dev, swap-dev-qa]
     steps:
+      - uses: actions/checkout@v2
       - name: 'Redeploy to dev'
         uses: ./.github/workflows/composite/deploy
         with:

@@ -1,0 +1,28 @@
+name: Deploy
+description: Deploys artifact to Azure
+inputs:
+  artifact_name:
+    description: 'Name of artifact to download'
+    required: true
+  function_app_name:
+    description: 'Name of Azure Function App'
+    required: true
+  publish_profile:
+    description: 'Azure Function publish profile'
+    required: true
+
+runs:
+    using: 'composite'
+    steps:
+      - name: 'Download artifact'
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{inputs.artifact_name}}
+          path: './downloaded-app'
+
+      - name: 'Deploy artifact'
+        uses: azure/functions-action@v1
+        with:
+          app-name: ${{inputs.function_app_name}}
+          package: './downloaded-app'
+          publish-profile: ${{inputs.publish_profile}}
