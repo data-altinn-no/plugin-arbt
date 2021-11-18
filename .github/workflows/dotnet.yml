@@ -12,10 +12,14 @@ on:
 
 env:
   ROOT_SOLUTION_PATH: ./
-  AZURE_FUNCTIONAPP_NAME: func-esarbt-test-dev # set this to the name of your azure function app resource
-  AZURE_FUNCTION_PROJ_PATH: src/Altinn.Dan.Plugin.Arbeidstilsynet  # set this to the path to your function app project
+  FUNCTION_PROJECT_PATH: src/Altinn.Dan.Plugin.Arbeidstilsynet  # set this to the path to your function app project
   AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json
   BUILD_CONFIGURATION: 'Release'    # set this to the appropriate build configuration
+
+  FUNCTIONAPP_NAME_TEST: 'func-esarbt-test-dev'
+  FUNCTIONAPP_NAME_PROD: 'func-esarbt-prod-prod'
+  RESOURCE_GROUP_TEST: 'rg-arbt-es-test'
+  RESOURCE_GROUP_PROD: 'rg-arbt-es-prod'
   DOTNET_VERSION: '6.0.x'
 
 jobs:
@@ -44,24 +48,19 @@ jobs:
         run: |
           dotnet build --configuration '${{ env.BUILD_CONFIGURATION }}'
           dotnet publish -c '${{ env.BUILD_CONFIGURATION }}' --no-restore -o './published-app'
-        working-directory: ${{ env.AZURE_FUNCTION_PROJ_PATH }}
+        working-directory: ${{ env.FUNCTION_PROJECT_PATH }}
 
       - name: 'Publish artifact'
         uses: actions/upload-artifact@v2
         with:
           name: dan-plugin-arbt
-          path: ${{ env.AZURE_FUNCTION_PROJ_PATH }}/published-app
+          path: ${{ env.FUNCTION_PROJECT_PATH }}/published-app
 
   deploy-dev:
     runs-on: ubuntu-latest
     environment: 'dev'
     needs: build-and-publish
     steps:
-      - name: 'Login via Azure CLI'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-    
       - name: 'Download artifact'
         uses: actions/download-artifact@v2
         with:
@@ -71,24 +70,42 @@ jobs:
       - name: 'Deploy to dev'
         uses: azure/functions-action@v1
         with:
-          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          app-name: ${{ env.FUNCTIONAPP_NAME_TEST }}
           package: './published-app'
           publish-profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
 
-  deploy-staging:
+  swap-dev-qa:
     runs-on: ubuntu-latest
-    environment: 'staging'
+    environment: 'qa'
     needs: [build-and-publish, deploy-dev]
     steps:
-      - name: 'Download artifact'
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 'Swap dev and qa'
+        run: |
+          az webapp deployment slot swap -g '${{ env.RESOURCE_GROUP_TEST }}' -n '${{ env.FUNCTIONAPP_NAME_TEST }}' --slot 'qa' --target-slot 'production'
+
+      - name: 'Azure logout'
+        run: |
+          az logout
+
+  redeploy-dev:
+    runs-on: ubuntu-latest
+    environment: 'dev'
+    needs: [build-and-publish, deploy-dev, swap-dev-qa]
+    steps:
+      - name: 'Download artifact again'
         uses: actions/download-artifact@v2
         with:
           name: dan-plugin-arbt
           path: './published-app'
 
-      - name: 'Deploy to staging'
+      - name: 'Redeploy to dev'
         uses: azure/functions-action@v1
         with:
-          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          app-name: ${{ env.FUNCTIONAPP_NAME_TEST }}
           package: './published-app'
           publish-profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
