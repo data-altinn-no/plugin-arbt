@@ -1,0 +1,98 @@
+name: dan-plugin-arbt
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**/README.md'
+      - '**/*.yml'
+  workflow_dispatch:
+
+env:
+  ROOT_SOLUTION_PATH: ./
+  FUNCTION_PROJECT_PATH: src/Altinn.Dan.Plugin.Arbeidstilsynet  # set this to the path to your function app project
+  AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json
+  BUILD_CONFIGURATION: 'Release'
+
+  ARTIFACT_NAME: 'dan-plugin-arbt'
+  FUNCTIONAPP_NAME_TEST: 'func-esarbt-test-dev'
+  FUNCTIONAPP_NAME_PROD: 'func-esarbt-prod-prod'
+  RESOURCE_GROUP_TEST: 'rg-arbt-es-test'
+  RESOURCE_GROUP_PROD: 'rg-arbt-es-prod'
+  DOTNET_VERSION: '6.0.x'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Get the latest source code'
+        uses: actions/checkout@v2
+
+      - name: 'Setup .NET'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          source-url: ${{ env.AZURE_ARTIFACTS_FEED_URL }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+
+      - name: 'Restore, build & test'
+        run: |
+          dotnet restore
+          dotnet build --no-restore
+          dotnet test --no-build --verbosity normal
+        working-directory: ${{ env.ROOT_SOLUTION_PATH }}
+
+      - name: 'Build and publish Function App for Release'
+        run: |
+          dotnet build --configuration '${{ env.BUILD_CONFIGURATION }}'
+          dotnet publish -c '${{ env.BUILD_CONFIGURATION }}' --no-restore -o './published-app'
+        working-directory: ${{ env.FUNCTION_PROJECT_PATH }}
+
+      - name: 'Publish artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.FUNCTION_PROJECT_PATH }}/published-app
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: 'dev'
+    needs: build-and-publish
+    steps:
+      - name: 'Deploy to dev'
+        uses: ./.github/workflows/composite/deploy
+        with:
+          artifact_name: ${{ env.ARTIFACT_NAME }}
+          function_app_name: ${{ env.FUNCTIONAPP_NAME_TEST }}
+          publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
+
+  swap-dev-qa:
+    runs-on: ubuntu-latest
+    environment: 'qa'
+    needs: [build-and-publish, deploy-dev]
+    steps:
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 'Swap dev and qa'
+        run: |
+          az webapp deployment slot swap -g '${{ env.RESOURCE_GROUP_TEST }}' -n '${{ env.FUNCTIONAPP_NAME_TEST }}' --slot 'qa' --target-slot 'production'
+
+      - name: 'Azure logout'
+        run: |
+          az logout
+
+  redeploy-dev:
+    runs-on: ubuntu-latest
+    environment: 'dev'
+    needs: [build-and-publish, deploy-dev, swap-dev-qa]
+    steps:
+      - name: 'Redeploy to dev'
+        uses: ./.github/workflows/composite/deploy
+        with:
+          artifact_name: ${{ env.ARTIFACT_NAME }}
+          function_app_name: ${{ env.FUNCTIONAPP_NAME_TEST }}
+          publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
