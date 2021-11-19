@@ -10,14 +10,13 @@ on:
 
 env:
   ROOT_SOLUTION_PATH: ./
-  FUNCTION_PROJECT_PATH: src/Altinn.Dan.Plugin.Arbeidstilsynet  # set this to the path to your function app project
+  FUNCTION_PROJECT_PATH: src/Altinn.Dan.Plugin.Arbeidstilsynet
   AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json
   BUILD_CONFIGURATION: 'Release'
 
   ARTIFACT_NAME: 'dan-plugin-arbt'
   FUNCTIONAPP_NAME_TEST: 'func-esarbt-test-dev'
   FUNCTIONAPP_NAME_PROD: 'func-esarbt-prod-prod'
-  RESOURCE_GROUP_TEST: 'rg-arbt-es-test'
   RESOURCE_GROUP_PROD: 'rg-arbt-es-prod'
   DOTNET_VERSION: '6.0.x'
 
