@@ -14,7 +14,6 @@ env:
   AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json
   BUILD_CONFIGURATION: 'Release'
 
-  ARTIFACT_NAME: 'dan-plugin-arbt'
   FUNCTIONAPP_NAME_TEST: 'func-esarbt-test-dev'
   FUNCTIONAPP_NAME_PROD: 'func-esarbt-prod-prod'
   RESOURCE_GROUP_PROD: 'rg-arbt-es-prod'
@@ -51,7 +50,6 @@ jobs:
       - name: 'Publish artifact'
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.FUNCTION_PROJECT_PATH }}/published-app
 
   deploy-dev:
@@ -63,7 +61,6 @@ jobs:
       - name: 'Deploy to dev'
         uses: ./.github/workflows/composite/deploy
         with:
-          artifact_name: ${{ env.ARTIFACT_NAME }}
           function_app_name: ${{ env.FUNCTIONAPP_NAME_TEST }}
           publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
 
@@ -76,7 +73,6 @@ jobs:
       - name: 'Deploy to staging'
         uses: ./.github/workflows/composite/deploy
         with:
-          artifact_name: ${{ env.ARTIFACT_NAME }}
           function_app_name: ${{ env.FUNCTIONAPP_NAME_PROD }}
           publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
 
@@ -105,6 +101,5 @@ jobs:
       - name: 'Redeploy to staging'
         uses: ./.github/workflows/composite/deploy
         with:
-          artifact_name: ${{ env.ARTIFACT_NAME }}
           function_app_name: ${{ env.FUNCTIONAPP_NAME_PROD }}
           publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
