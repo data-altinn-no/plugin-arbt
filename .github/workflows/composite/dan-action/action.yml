@@ -1,0 +1,73 @@
+name: 'dan-action'
+description: '***'
+inputs:
+  dotnet_version:
+    description: 'Dotnet version'
+    default: '6.0.x'
+    required: false
+  azure_artifacts_feed_url:
+    description: 'Azure feed URL'
+    default: 'https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json'
+    required: false
+  azure_artifact_pat:
+    description: 'Azure PAT'
+    required: true
+  root_solution_path:
+    description: 'Root path of solution'
+    default: './'
+    required: false
+  function_project_path:
+    description: 'Path to function app project'
+    required: true
+  build_configuration:
+    description: 'Build configuration'
+    default: 'Release'
+    required: false
+  #  function_app_name:
+#    description: 'Name of Azure Function App'
+#    required: true
+#  publish_profile:
+#    description: 'Azure Function publish profile'
+#    required: true
+  publish:
+    description: 'publish artifact'
+    required: true
+  upload:
+    description: 'upload artifact'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Get the latest source code'
+      uses: actions/checkout@v2
+
+    - name: 'Setup .NET'
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ inputs.dotnet_version }}
+        source-url: ${{ inputs.azure_artifacts_feed_url }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ inputs.azure_artifact_pat }}
+
+    - name: 'Restore, build & test'
+      run: |
+        dotnet restore
+        dotnet build --no-restore
+        dotnet test --no-build --verbosity normal
+      working-directory: ${{ inputs.root_solution_path }}
+      shell: bash
+
+      if: inputs.publish == 'true'
+    - name: 'Build and publish Function App for Release'
+      run: |
+        dotnet build --configuration '${{ inputs.build_configuration }}'
+        dotnet publish -c '${{ inputs.build_configuration }}' --no-restore -o './published-app'
+      working-directory: ${{ inputs.function_project_path }}
+      shell: bash
+
+      if: inputs.upload == 'true'
+    - name: 'Publish artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        path: ${{ inputs.function_project_path }}/published-app
