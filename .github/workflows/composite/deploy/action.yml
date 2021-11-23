@@ -1,10 +1,6 @@
 name: Deploy
 description: Deploys artifact to Azure
 inputs:
-  artifact_name:
-    description: 'Name of artifact to download'
-    default: 'artifact'
-    required: true
   function_app_name:
     description: 'Name of Azure Function App'
     required: true
