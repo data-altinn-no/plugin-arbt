@@ -58,16 +58,16 @@ runs:
       working-directory: ${{ inputs.root_solution_path }}
       shell: bash
 
-      if: inputs.publish == 'true'
     - name: 'Build and publish Function App for Release'
+      if: inputs.publish == 'true'
       run: |
         dotnet build --configuration '${{ inputs.build_configuration }}'
         dotnet publish -c '${{ inputs.build_configuration }}' --no-restore -o './published-app'
       working-directory: ${{ inputs.function_project_path }}
       shell: bash
 
-      if: inputs.upload == 'true'
     - name: 'Upload artifact'
+      if: inputs.upload == 'true'
       uses: actions/upload-artifact@v2
       with:
         path: ${{ inputs.function_project_path }}/published-app
