@@ -15,9 +15,6 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Get the latest source code'
-        uses: actions/checkout@v2
-
       - name: 'Build, test and upload artifact'
         uses: Altinn/dan-deploy-actions/composite/build@feature/composite-actions
         with:
@@ -30,7 +27,6 @@ jobs:
     environment: 'dev'
     needs: build-and-publish
     steps:
-      - uses: actions/checkout@v2
       - name: 'Deploy to dev'
         uses: Altinn/dan-deploy-actions/composite/deploy@feature/composite-actions
         with:
@@ -42,7 +38,6 @@ jobs:
     environment: 'staging'
     needs: deploy-dev
     steps:
-      - uses: actions/checkout@v2
       - name: 'Deploy to staging'
         uses: Altinn/dan-deploy-actions/composite/deploy@feature/composite-actions
         with:
@@ -70,7 +65,6 @@ jobs:
     environment: 'staging'
     needs: swap-staging-production
     steps:
-      - uses: actions/checkout@v2
       - name: 'Redeploy to staging'
         uses: Altinn/dan-deploy-actions/composite/deploy@feature/composite-actions
         with:
