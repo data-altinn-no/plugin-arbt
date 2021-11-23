@@ -1,5 +1,5 @@
-name: 'dan-action'
-description: '***'
+name: 'build-test-publish'
+description: 'Builds, tests, publishes and optionally uploads solution'
 inputs:
   dotnet_version:
     description: 'Dotnet version'
@@ -9,9 +9,10 @@ inputs:
     description: 'Azure feed URL'
     default: 'https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json'
     required: false
-  azure_artifact_pat:
-    description: 'Azure PAT'
-    required: true
+  build_configuration:
+    description: 'Build configuration'
+    default: 'Release'
+    required: false
   root_solution_path:
     description: 'Root path of solution'
     default: './'
@@ -19,18 +20,8 @@ inputs:
   function_project_path:
     description: 'Path to function app project'
     required: true
-  build_configuration:
-    description: 'Build configuration'
-    default: 'Release'
-    required: false
-  #  function_app_name:
-#    description: 'Name of Azure Function App'
-#    required: true
-#  publish_profile:
-#    description: 'Azure Function publish profile'
-#    required: true
-  publish:
-    description: 'publish artifact'
+  azure_artifact_pat:
+    description: 'Azure PAT'
     required: true
   upload:
     description: 'upload artifact'
@@ -39,10 +30,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: 'Get the latest source code'
+    - name: 'Get the latest source'
       uses: actions/checkout@v2
 
-    - name: 'Setup .NET'
+    - name: 'Setup dotnet'
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: ${{ inputs.dotnet_version }}
@@ -50,7 +41,7 @@ runs:
       env:
         NUGET_AUTH_TOKEN: ${{ inputs.azure_artifact_pat }}
 
-    - name: 'Restore, build & test'
+    - name: 'Dotnet restore, build & test'
       run: |
         dotnet restore
         dotnet build --no-restore
@@ -58,15 +49,14 @@ runs:
       working-directory: ${{ inputs.root_solution_path }}
       shell: bash
 
-    - name: 'Build and publish Function App for Release'
-      if: inputs.publish == 'true'
+    - name: 'Dotnet build and publish Function App for Release'
       run: |
         dotnet build --configuration '${{ inputs.build_configuration }}'
         dotnet publish -c '${{ inputs.build_configuration }}' --no-restore -o './published-app'
       working-directory: ${{ inputs.function_project_path }}
       shell: bash
 
-    - name: 'Upload artifact'
+    - name: 'Upload artifact (named as artifact)'
       if: inputs.upload == 'true'
       uses: actions/upload-artifact@v2
       with:

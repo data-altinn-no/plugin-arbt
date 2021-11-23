@@ -23,8 +23,8 @@ jobs:
       - name: Run a one-line script
         run: echo Hello, world!
 
-      - name: 'Do some dan-related stuff'
-        uses: ./.github/workflows/composite/dan-action
+      - name: 'Build and test'
+        uses: ./.github/workflows/composite/build
         with:
           azure_artifact_pat: ${{ secrets.AZURE_ARTIFACTS_PAT }}
           function_project_path: 'src/Altinn.Dan.Plugin.Arbeidstilsynet'
