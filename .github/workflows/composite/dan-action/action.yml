@@ -67,7 +67,7 @@ runs:
       shell: bash
 
       if: inputs.upload == 'true'
-    - name: 'Publish artifact'
+    - name: 'Upload artifact'
       uses: actions/upload-artifact@v2
       with:
         path: ${{ inputs.function_project_path }}/published-app

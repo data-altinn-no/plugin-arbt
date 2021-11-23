@@ -28,8 +28,8 @@ jobs:
         with:
           azure_artifact_pat: ${{ secrets.AZURE_ARTIFACTS_PAT }}
           function_project_path: 'src/Altinn.Dan.Plugin.Arbeidstilsynet'
-          publish: true
-          upload: false
+          publish: 'true'
+          upload: 'false'
 
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
