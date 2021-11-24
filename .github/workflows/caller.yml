@@ -47,7 +47,8 @@ jobs:
 
   call-reusable-workflow:
     needs: [build-and-publish]
-    uses: ctrlaltd3v/dan-plugin-arbt/.github/workflows/danflow.yml@main
+    uses: Altinn/dan-deploy-actions/.github/workflows/danflow.yml@main
+#    uses: ctrlaltd3v/dan-plugin-arbt/.github/workflows/danflow.yml@main
     secrets:
       function_app_name: ${{ secrets.FUNCTIONAPP_NAME }}
       publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
