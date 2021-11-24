@@ -23,6 +23,7 @@ jobs:
     name: 'Deploy -> dev'
     runs-on: ubuntu-latest
     environment: 'dev'
+    needs: [download-artifact]
     steps:
       - name: 'Deploy artifact'
         uses: azure/functions-action@v1
@@ -35,6 +36,7 @@ jobs:
     name: 'Deploy -> staging'
     runs-on: ubuntu-latest
     environment: 'staging'
+    needs: [deploy-dev]
     steps:
       - name: 'Deploy artifact'
         uses: azure/functions-action@v1
