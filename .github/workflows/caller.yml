@@ -47,6 +47,7 @@ jobs:
   
   call-reusable-workflow:
     runs-on: ubuntu-latest
+    needs: [build-and-publish]
     steps:
       - uses: ./.github/workflows/reusable/danflow.yml@main
 
