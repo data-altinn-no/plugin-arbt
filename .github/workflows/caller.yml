@@ -46,6 +46,7 @@ jobs:
           path: ${{ env.FUNCTION_PROJECT_PATH }}/published-app
 
   call-reusable-workflow:
+    needs: [build-and-publish]
     uses: ctrlaltd3v/dan-plugin-arbt/.github/workflows/danflow.yml@main
     secrets:
       function_app_name: ${{ secrets.FUNCTIONAPP_NAME }}
