@@ -1,35 +1,58 @@
-# This is a basic workflow to help you get started with Actions
+name: Experiment on reusable workflows
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+env:
+  ROOT_SOLUTION_PATH: ./
+  FUNCTION_PROJECT_PATH: src/Altinn.Dan.Plugin.Arbeidstilsynet
+  AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json
+  BUILD_CONFIGURATION: 'Release'
+
+  FUNCTIONAPP_NAME_TEST: 'func-esarbt-test-dev'
+  DOTNET_VERSION: '6.0.x'
+
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  build-and-publish:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: 'Get the latest source code'
+        uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
+      - name: 'Setup .NET'
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          source-url: ${{ env.AZURE_ARTIFACTS_FEED_URL }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+
+      - name: 'Restore, build & test'
+        run: |
+          dotnet restore
+          dotnet build --no-restore
+          dotnet test --no-build --verbosity normal
+        working-directory: ${{ env.ROOT_SOLUTION_PATH }}
+
+      - name: 'Build and publish Function App for Release'
+        run: |
+          dotnet build --configuration '${{ env.BUILD_CONFIGURATION }}'
+          dotnet publish -c '${{ env.BUILD_CONFIGURATION }}' --no-restore -o './published-app'
+        working-directory: ${{ env.FUNCTION_PROJECT_PATH }}
+
+      - name: 'Publish artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          path: ${{ env.FUNCTION_PROJECT_PATH }}/published-app
+  
+  call-reusable-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/workflows/reusable/danflow.yml@main
+
       - name: Run a one-line script
         run: echo Hello, world!
 
-      # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
           echo Add other actions to build,

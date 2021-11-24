@@ -1,0 +1,44 @@
+name: Reusable dan workflow
+
+on:
+  workflow_call:
+    secrets:
+      function_app_name:
+        required: true
+      publish_profile:
+        required: true
+
+jobs:
+  download-artifact:
+    name: 'Download artifact'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Download artifact'
+        uses: actions/download-artifact@v2
+        with:
+          name: 'artifact'
+          path: './downloaded-app'
+
+  deploy-dev:
+    name: 'Deploy -> dev'
+    runs-on: ubuntu-latest
+    environment: 'dev'
+    steps:
+      - name: 'Deploy artifact'
+        uses: azure/functions-action@v1
+        with:
+          app-name: ${{secrets.function_app_name}}
+          package: './downloaded-app'
+          publish-profile: ${{secrets.publish_profile}}
+
+  deploy-staging:
+    name: 'Deploy -> staging'
+    runs-on: ubuntu-latest
+    environment: 'staging'
+    steps:
+      - name: 'Deploy artifact'
+        uses: azure/functions-action@v1
+        with:
+          app-name: ${{secrets.function_app_name}}
+          package: './downloaded-app'
+          publish-profile: ${{secrets.publish_profile}}
