@@ -9,23 +9,17 @@ on:
         required: true
 
 jobs:
-  download-artifact:
-    name: 'Download artifact'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Download artifact'
-        uses: actions/download-artifact@v2
-        with:
-          name: 'artifact'
-          path: './downloaded-app'
-
   deploy-dev:
     name: 'Deploy -> dev'
     runs-on: ubuntu-latest
     environment: 'dev'
-    needs: [download-artifact]
     steps:
-      - name: 'Deploy artifact'
+      - name: 'Download artifact for dev'
+        uses: actions/download-artifact@v2
+        with:
+          name: 'artifact'
+          path: './downloaded-app'
+      - name: 'Deploy artifact to dev'
         uses: azure/functions-action@v1
         with:
           app-name: ${{secrets.function_app_name}}
@@ -38,7 +32,12 @@ jobs:
     environment: 'staging'
     needs: [deploy-dev]
     steps:
-      - name: 'Deploy artifact'
+      - name: 'Download artifact for staging'
+        uses: actions/download-artifact@v2
+        with:
+          name: 'artifact'
+          path: './downloaded-app'
+      - name: 'Deploy artifact to staging'
         uses: azure/functions-action@v1
         with:
           app-name: ${{secrets.function_app_name}}
