@@ -20,3 +20,4 @@ jobs:
       azure_artifact_pat: ${{ secrets.AZURE_ARTIFACTS_PAT }}
       azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
       resource_group_prod: ${{ secrets.RESOURCE_GROUP_PROD }}
+      
