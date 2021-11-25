@@ -1,4 +1,4 @@
-name: dan-plugin-arbt
+name: Deploy dan-plugin-arbt
 
 on:
   push:
@@ -8,65 +8,15 @@ on:
       - '**/*.yml'
   workflow_dispatch:
 
-env:
-  FUNCTION_PROJECT_PATH: src/Altinn.Dan.Plugin.Arbeidstilsynet
-
 jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Build, test and upload artifact'
-        uses: Altinn/dan-deploy-actions/composite/build@feature/composite-actions
-        with:
-          azure_artifact_pat: ${{ secrets.AZURE_ARTIFACTS_PAT }}
-          function_project_path: ${{ env.FUNCTION_PROJECT_PATH }}
-          upload: true
-
-  deploy-dev:
-    runs-on: ubuntu-latest
-    environment: 'dev'
-    needs: build-and-publish
-    steps:
-      - name: 'Deploy to dev'
-        uses: Altinn/dan-deploy-actions/composite/deploy@feature/composite-actions
-        with:
-          function_app_name: ${{ secrets.FUNCTIONAPP_NAME }}
-          publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
-
-  deploy-staging:
-    runs-on: ubuntu-latest
-    environment: 'staging'
-    needs: deploy-dev
-    steps:
-      - name: 'Deploy to staging'
-        uses: Altinn/dan-deploy-actions/composite/deploy@feature/composite-actions
-        with:
-          function_app_name: ${{ secrets.FUNCTIONAPP_NAME }}
-          publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
-
-  swap-staging-production:
-    runs-on: ubuntu-latest
-    environment: 'production'
-    needs: deploy-staging
-    steps:
-      - name: 'Login via Azure CLI'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: 'Swap staging and production'
-        run: |
-          az webapp deployment slot swap -g '${{ env.RESOURCE_GROUP_PROD }}' -n '${{ secrets.FUNCTIONAPP_NAME }}' --slot 'staging' --target-slot 'production'
-      - name: 'Azure logout'
-        run: |
-          az logout
-
-  redeploy-staging:
-    runs-on: ubuntu-latest
-    environment: 'staging'
-    needs: swap-staging-production
-    steps:
-      - name: 'Redeploy to staging'
-        uses: Altinn/dan-deploy-actions/composite/deploy@feature/composite-actions
-        with:
-          function_app_name: ${{ secrets.FUNCTIONAPP_NAME }}
-          publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
+  run:
+    uses: Altinn/dan-deploy-actions/.github/workflows/dan-deploy-flow.yml@main
+    with:
+      artifact_name: 'dan-plugin-arbt' # Can be omitted, defaults to 'artifact'
+      function_project_path: 'src/Altinn.Dan.Plugin.Arbeidstilsynet'
+    secrets:
+      function_app_name: ${{ secrets.FUNCTIONAPP_NAME }}
+      publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
+      azure_artifact_pat: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+      azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+      resource_group_prod: ${{ secrets.RESOURCE_GROUP_PROD }}
