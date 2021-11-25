@@ -47,7 +47,7 @@ jobs:
 
   call-reusable-workflow:
 #    needs: [build-and-publish]
-    uses: Altinn/dan-deploy-actions/.github/workflows/dan-deploy-flow@main
+    uses: Altinn/dan-deploy-actions/.github/workflows/dan-deploy-flow.yml@main
     with:
       artifact_name: 'dan-plugin-arbt'
       function_project_path: ${{ env.FUNCTION_PROJECT_PATH }}
