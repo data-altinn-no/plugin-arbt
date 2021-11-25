@@ -4,51 +4,55 @@ on:
   workflow_dispatch:
 
 env:
-  ROOT_SOLUTION_PATH: ./
+#  ROOT_SOLUTION_PATH: ./
   FUNCTION_PROJECT_PATH: src/Altinn.Dan.Plugin.Arbeidstilsynet
-  AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json
-  BUILD_CONFIGURATION: 'Release'
-
-  FUNCTIONAPP_NAME_TEST: 'func-esarbt-test-dev'
-  DOTNET_VERSION: '6.0.x'
+#  AZURE_ARTIFACTS_FEED_URL: https://pkgs.dev.azure.com/nadobe/Nadobe/_packaging/Packages/nuget/v3/index.json
+#  BUILD_CONFIGURATION: 'Release'
+#
+#  FUNCTIONAPP_NAME_TEST: 'func-esarbt-test-dev'
+#  DOTNET_VERSION: '6.0.x'
 
 jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Get the latest source code'
-        uses: actions/checkout@v2
-
-      - name: 'Setup .NET'
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-          source-url: ${{ env.AZURE_ARTIFACTS_FEED_URL }}
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
-
-      - name: 'Restore, build & test'
-        run: |
-          dotnet restore
-          dotnet build --no-restore
-          dotnet test --no-build --verbosity normal
-        working-directory: ${{ env.ROOT_SOLUTION_PATH }}
-
-      - name: 'Build and publish Function App for Release'
-        run: |
-          dotnet build --configuration '${{ env.BUILD_CONFIGURATION }}'
-          dotnet publish -c '${{ env.BUILD_CONFIGURATION }}' --no-restore -o './published-app'
-        working-directory: ${{ env.FUNCTION_PROJECT_PATH }}
-
-      - name: 'Publish artifact'
-        uses: actions/upload-artifact@v2
-        with:
-          path: ${{ env.FUNCTION_PROJECT_PATH }}/published-app
+#  build-and-publish:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: 'Get the latest source code'
+#        uses: actions/checkout@v2
+#
+#      - name: 'Setup .NET'
+#        uses: actions/setup-dotnet@v1
+#        with:
+#          dotnet-version: ${{ env.DOTNET_VERSION }}
+#          source-url: ${{ env.AZURE_ARTIFACTS_FEED_URL }}
+#        env:
+#          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+#
+#      - name: 'Restore, build & test'
+#        run: |
+#          dotnet restore
+#          dotnet build --no-restore
+#          dotnet test --no-build --verbosity normal
+#        working-directory: ${{ env.ROOT_SOLUTION_PATH }}
+#
+#      - name: 'Build and publish Function App for Release'
+#        run: |
+#          dotnet build --configuration '${{ env.BUILD_CONFIGURATION }}'
+#          dotnet publish -c '${{ env.BUILD_CONFIGURATION }}' --no-restore -o './published-app'
+#        working-directory: ${{ env.FUNCTION_PROJECT_PATH }}
+#
+#      - name: 'Publish artifact'
+#        uses: actions/upload-artifact@v2
+#        with:
+#          path: ${{ env.FUNCTION_PROJECT_PATH }}/published-app
 
   call-reusable-workflow:
-    needs: [build-and-publish]
+#    needs: [build-and-publish]
     uses: Altinn/dan-deploy-actions/.github/workflows/danflow.yml@main
+    with:
+      artifact_name: 'dan-plugin-arbt'
+      function_project_path: ${{ env.FUNCTION_PROJECT_PATH }}
     secrets:
       function_app_name: ${{ secrets.FUNCTIONAPP_NAME }}
       publish_profile: ${{ secrets.AZURE_FUNCTION_PUBLISH_CREDS }}
+      azure_artifact_pat: ${{ secrets.AZURE_ARTIFACTS_PAT }}
 
