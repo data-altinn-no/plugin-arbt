@@ -1,6 +1,8 @@
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Nadobe.Common.Interfaces;
 using Nadobe.Common.Models;
+using Nadobe.Common.Models.Enums;
+using System;
 using System.Collections.Generic;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
@@ -23,7 +25,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     EvidenceCodeName = "Bemanningsforetakregisteret",
                     EvidenceSource = EvidenceSourceMetadata.SOURCE,
                     ServiceContext = "eBevis",
-                    AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,
+                    AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,                    
                     Values = new List<EvidenceValue>()
                     {
                         new EvidenceValue()
@@ -61,11 +63,26 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                             EvidenceValueName = "StatusEndret",
                             ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.DateTime
                         }
-                    }
+                    },
+                    AuthorizationRequirements = GetArbtEbevisAuthRequirements()
                 }
             };
 
             return a;
+        }
+
+        private List<Requirement> GetArbtEbevisAuthRequirements()
+        {
+            return new List<Requirement>()
+                {
+                    new PartyTypeRequirement()
+                    {
+                        AllowedPartyTypes = new AllowedPartyTypesList()
+                        {
+                            new KeyValuePair<AccreditationPartyTypes, PartyTypeConstraint>(AccreditationPartyTypes.Requestor,PartyTypeConstraint.PublicAgency)
+                        }
+                    }
+                };
         }
     }
 
