@@ -17,16 +17,16 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet.Utils
             var org = await GetOrganizationInfoFromBR(organizationNumber, client);
 
             if (org != null && !string.IsNullOrEmpty(org.OverordnetEnhet))
-                return await GetMainUnit(org.OverordnetEnhet.ToString(), client);
-            else if (org == null)
+                return await GetMainUnit(org.OverordnetEnhet, client);
+
+            if (org == null)
             {
                 throw new EvidenceSourcePermanentClientException(
                             EvidenceSourceMetadata.ERROR_ORGANIZATION_NOT_FOUND,
                             $"{organizationNumber} was not found in the Central Coordinating Register for Legal Entities");
-            } else
-            {
-                return org;
-            }
+            }           
+
+            return org;            
         }
 
         public static async Task<BREntityRegisterEntry> GetOrganizationInfoFromBR(string organizationNumber, HttpClient client)
