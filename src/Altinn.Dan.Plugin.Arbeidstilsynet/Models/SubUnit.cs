@@ -2,8 +2,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet.Models.Sub
-{
-    // Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
+{   
     public class Self
     {
         [JsonProperty("href")]

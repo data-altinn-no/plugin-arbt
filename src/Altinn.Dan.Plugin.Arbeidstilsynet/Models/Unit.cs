@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet.Models.Unit
 {
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse); 
     public class Self
     {
         [JsonProperty("href")]

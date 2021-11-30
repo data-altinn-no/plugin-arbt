@@ -6,6 +6,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Nadobe;
 using Nadobe.Common.Exceptions;
+using Nadobe.Common.Interfaces;
 using Nadobe.Common.Models;
 using Nadobe.Common.Util;
 using Newtonsoft.Json;
@@ -23,13 +24,13 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
         private ILogger _logger;
         private readonly HttpClient _client;
         private readonly ApplicationSettings _settings;
-        private readonly EvidenceSourceMetadata _metadata;
+        private readonly IEvidenceSourceMetadata _metadata;
 
-        public Main(IHttpClientFactory httpClientFactory, IApplicationSettings settings)
+        public Main(IHttpClientFactory httpClientFactory, IApplicationSettings settings, IEvidenceSourceMetadata evidenceSourceMetadata)
         {
             _client = httpClientFactory.CreateClient("SafeHttpClient");
             _settings = (ApplicationSettings)settings;
-            _metadata = new EvidenceSourceMetadata(_settings);
+            _metadata = evidenceSourceMetadata;
         }
 
         [Function("Bemanningsforetakregisteret")]
