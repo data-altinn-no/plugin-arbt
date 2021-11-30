@@ -1,7 +1,3 @@
-using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +6,10 @@ using Polly;
 using Polly.Caching.Distributed;
 using Polly.Extensions.Http;
 using Polly.Registry;
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {

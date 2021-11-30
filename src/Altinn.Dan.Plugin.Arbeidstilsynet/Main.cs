@@ -1,11 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
-using Altinn.Dan.Plugin.Arbeidstilsynet.Models;
 using Altinn.Dan.Plugin.Arbeidstilsynet.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -16,6 +9,12 @@ using Nadobe.Common.Exceptions;
 using Nadobe.Common.Models;
 using Nadobe.Common.Util;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
@@ -96,7 +95,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
         {
             HttpResponseMessage result = null;
             try
-            {                
+            {
                 var request = new HttpRequestMessage(HttpMethod.Get, target);
                 result = await _client.SendAsync(request);
             }

@@ -1,9 +1,6 @@
 using Altinn.Dan.Plugin.Arbeidstilsynet.Models;
-using Altinn.Dan.Plugin.Arbeidstilsynet.Models.Sub;
 using Nadobe.Common.Exceptions;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -24,9 +21,9 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet.Utils
                 throw new EvidenceSourcePermanentClientException(
                             EvidenceSourceMetadata.ERROR_ORGANIZATION_NOT_FOUND,
                             $"{organizationNumber} was not found in the Central Coordinating Register for Legal Entities");
-            }           
+            }
 
-            return org;            
+            return org;
         }
 
         public static async Task<BREntityRegisterEntry> GetOrganizationInfoFromBR(string organizationNumber, HttpClient client)
@@ -67,6 +64,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet.Utils
             }
 
             return result;
-        }      
+        }
     }
 }

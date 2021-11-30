@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet.Models.Sub
 {
