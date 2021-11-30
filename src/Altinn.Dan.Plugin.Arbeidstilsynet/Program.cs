@@ -7,8 +7,6 @@ using Polly.Caching.Distributed;
 using Polly.Extensions.Http;
 using Polly.Registry;
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
@@ -44,16 +42,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     // Client configured with circuit breaker policies
                     services.AddHttpClient("SafeHttpClient", client => { client.Timeout = new TimeSpan(0, 0, 30); })
                         .AddPolicyHandlerFromRegistry("defaultCircuitBreaker");
-
-                    // Client configured without circuit breaker policies. shorter timeout
-                    services.AddHttpClient("CachedHttpClient", client => { client.Timeout = new TimeSpan(0, 0, 5); });
-
-                    services.Configure<JsonSerializerOptions>(options =>
-                    {
-                        options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                        options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-                        options.Converters.Add(new JsonStringEnumConverter());
-                    });
                 })
                 .Build();
             return host.RunAsync();
