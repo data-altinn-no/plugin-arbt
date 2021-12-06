@@ -29,8 +29,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     services.AddSingleton<IEvidenceSourceMetadata, EvidenceSourceMetadata>();
 
                     ApplicationSettings = services.BuildServiceProvider().GetRequiredService<IApplicationSettings>();
-
-                    // Client configured with circuit breaker policies
                     services.AddHttpClient("SafeHttpClient", client => { client.Timeout = new TimeSpan(0, 0, 30); });                       
                 })
                 .Build();
