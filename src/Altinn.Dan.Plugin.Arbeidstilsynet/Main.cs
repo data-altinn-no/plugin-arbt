@@ -1,19 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
+using Altinn.Dan.Plugin.Arbeidstilsynet.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Nadobe;
 using Nadobe.Common.Exceptions;
+using Nadobe.Common.Interfaces;
 using Nadobe.Common.Models;
 using Nadobe.Common.Util;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
@@ -21,14 +23,14 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
     {
         private ILogger _logger;
         private readonly HttpClient _client;
-        private readonly ApplicationSettings _settings;
-        private readonly EvidenceSourceMetadata _metadata;
+        private readonly IApplicationSettings _settings;
+        private readonly IEvidenceSourceMetadata _metadata;
 
-        public Main(IHttpClientFactory httpClientFactory, IApplicationSettings settings)
+        public Main(IHttpClientFactory httpClientFactory, IApplicationSettings settings, IEvidenceSourceMetadata evidenceSourceMetadata)
         {
             _client = httpClientFactory.CreateClient("SafeHttpClient");
-            _settings = (ApplicationSettings)settings;
-            _metadata = new EvidenceSourceMetadata(_settings);
+            _settings = settings;
+            _metadata = evidenceSourceMetadata;
         }
 
         [Function("Bemanningsforetakregisteret")]
@@ -49,8 +51,9 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
         private async Task<List<EvidenceValue>> GetEvidenceValuesBemanning(EvidenceHarvesterRequest evidenceHarvesterRequest)
         {
-            dynamic content = await MakeRequest(string.Format(_settings.BemanningUrl, evidenceHarvesterRequest.OrganizationNumber),
-                evidenceHarvesterRequest.OrganizationNumber);
+            //The registry only has main units, so we have to traverse the enterprise structure in case the subject of the lookup is a subunit
+            var actualOrganization = await BRUtils.GetMainUnit(evidenceHarvesterRequest.OrganizationNumber, _client);
+            dynamic content = await MakeRequest(string.Format(_settings.BemanningUrl, actualOrganization.Organisasjonsnummer), actualOrganization.Organisasjonsnummer.ToString());
 
             var ecb = new EvidenceBuilder(_metadata, "Bemanningsforetakregisteret");
             ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
@@ -77,8 +80,9 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
         private async Task<List<EvidenceValue>> GetEvidenceValuesRenhold(EvidenceHarvesterRequest evidenceHarvesterRequest)
         {
-            dynamic content = await MakeRequest(string.Format(_settings.RenholdUrl, evidenceHarvesterRequest.OrganizationNumber),
-                evidenceHarvesterRequest.OrganizationNumber);
+            //The registry only has main units, so we have to traverse the enterprise structure in case the subject of the lookup is a subunit
+            var actualOrganization = await BRUtils.GetMainUnit(evidenceHarvesterRequest.OrganizationNumber, _client);
+            dynamic content = await MakeRequest(string.Format(_settings.RenholdUrl, actualOrganization.Organisasjonsnummer), actualOrganization.Organisasjonsnummer.ToString());
 
             var ecb = new EvidenceBuilder(_metadata, "Renholdsregisteret");
             ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);

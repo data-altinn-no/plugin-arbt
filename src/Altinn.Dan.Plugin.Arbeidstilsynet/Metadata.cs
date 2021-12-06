@@ -1,6 +1,7 @@
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Nadobe.Common.Interfaces;
 using Nadobe.Common.Models;
+using Nadobe.Common.Models.Enums;
 using System.Collections.Generic;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
@@ -23,18 +24,18 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     EvidenceCodeName = "Bemanningsforetakregisteret",
                     EvidenceSource = EvidenceSourceMetadata.SOURCE,
                     ServiceContext = "eBevis",
-                    AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,
+                    AccessMethod = EvidenceAccessMethod.Open,
                     Values = new List<EvidenceValue>()
                     {
                         new EvidenceValue()
                         {
                             EvidenceValueName = "Organisasjonsnummer",
-                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                            ValueType = EvidenceValueType.String
                         },
                         new EvidenceValue()
                         {
                             EvidenceValueName = "Godkjenningsstatus",
-                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                            ValueType = EvidenceValueType.String
                         }
                     }
                 },
@@ -43,29 +44,44 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     EvidenceCodeName = "Renholdsregisteret",
                     EvidenceSource = EvidenceSourceMetadata.SOURCE,
                     ServiceContext = "eBevis",
-                    AccessMethod = Nadobe.Common.Models.Enums.EvidenceAccessMethod.Open,
+                    AccessMethod = EvidenceAccessMethod.Open,
                     Values = new List<EvidenceValue>()
                     {
                         new EvidenceValue()
                         {
                             EvidenceValueName = "Organisasjonsnummer",
-                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                            ValueType = EvidenceValueType.String
                         },
                         new EvidenceValue()
                         {
                             EvidenceValueName = "Status",
-                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.String
+                            ValueType = EvidenceValueType.String
                         },
                         new EvidenceValue()
                         {
                             EvidenceValueName = "StatusEndret",
-                            ValueType = Nadobe.Common.Models.Enums.EvidenceValueType.DateTime
+                            ValueType = EvidenceValueType.DateTime
                         }
-                    }
+                    },
+                    AuthorizationRequirements = GetArbtEbevisAuthRequirements()
                 }
             };
 
             return a;
+        }
+
+        private List<Requirement> GetArbtEbevisAuthRequirements()
+        {
+            return new List<Requirement>()
+                {
+                    new PartyTypeRequirement()
+                    {
+                        AllowedPartyTypes = new AllowedPartyTypesList()
+                        {
+                            new KeyValuePair<AccreditationPartyTypes, PartyTypeConstraint>(AccreditationPartyTypes.Requestor,PartyTypeConstraint.PublicAgency)
+                        }
+                    }
+                };
         }
     }
 

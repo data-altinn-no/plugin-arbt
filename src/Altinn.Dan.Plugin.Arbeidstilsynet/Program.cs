@@ -1,15 +1,14 @@
-using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Nadobe.Common.Interfaces;
 using Polly;
 using Polly.Caching.Distributed;
 using Polly.Extensions.Http;
 using Polly.Registry;
+using System;
+using System.Threading.Tasks;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
@@ -27,33 +26,10 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     services.AddHttpClient();
 
                     services.AddSingleton<IApplicationSettings, ApplicationSettings>();
-                    services.AddSingleton<EvidenceSourceMetadata>();
+                    services.AddSingleton<IEvidenceSourceMetadata, EvidenceSourceMetadata>();
 
                     ApplicationSettings = services.BuildServiceProvider().GetRequiredService<IApplicationSettings>();
-
-                    services.AddStackExchangeRedisCache(option => { option.Configuration = ApplicationSettings.RedisConnectionString; });
-
-                    var distributedCache = services.BuildServiceProvider().GetRequiredService<IDistributedCache>();
-                    var registry = new PolicyRegistry()
-                    {
-                        { "defaultCircuitBreaker", HttpPolicyExtensions.HandleTransientHttpError().CircuitBreakerAsync(4, ApplicationSettings.Breaker_RetryWaitTime) },
-                        { "CachePolicy", Policy.CacheAsync(distributedCache.AsAsyncCacheProvider<string>(), TimeSpan.FromHours(12)) }
-                    };
-                    services.AddPolicyRegistry(registry);
-
-                    // Client configured with circuit breaker policies
-                    services.AddHttpClient("SafeHttpClient", client => { client.Timeout = new TimeSpan(0, 0, 30); })
-                        .AddPolicyHandlerFromRegistry("defaultCircuitBreaker");
-
-                    // Client configured without circuit breaker policies. shorter timeout
-                    services.AddHttpClient("CachedHttpClient", client => { client.Timeout = new TimeSpan(0, 0, 5); });
-
-                    services.Configure<JsonSerializerOptions>(options =>
-                    {
-                        options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                        options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-                        options.Converters.Add(new JsonStringEnumConverter());
-                    });
+                    services.AddHttpClient("SafeHttpClient", client => { client.Timeout = new TimeSpan(0, 0, 30); });                       
                 })
                 .Build();
             return host.RunAsync();
