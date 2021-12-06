@@ -30,19 +30,8 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
                     ApplicationSettings = services.BuildServiceProvider().GetRequiredService<IApplicationSettings>();
 
-                    services.AddStackExchangeRedisCache(option => { option.Configuration = ApplicationSettings.RedisConnectionString; });
-
-                    var distributedCache = services.BuildServiceProvider().GetRequiredService<IDistributedCache>();
-                    var registry = new PolicyRegistry()
-                    {
-                        { "defaultCircuitBreaker", HttpPolicyExtensions.HandleTransientHttpError().CircuitBreakerAsync(4, ApplicationSettings.Breaker_RetryWaitTime) },
-                        { "CachePolicy", Policy.CacheAsync(distributedCache.AsAsyncCacheProvider<string>(), TimeSpan.FromHours(12)) }
-                    };
-                    services.AddPolicyRegistry(registry);
-
                     // Client configured with circuit breaker policies
-                    services.AddHttpClient("SafeHttpClient", client => { client.Timeout = new TimeSpan(0, 0, 30); })
-                        .AddPolicyHandlerFromRegistry("defaultCircuitBreaker");
+                    services.AddHttpClient("SafeHttpClient", client => { client.Timeout = new TimeSpan(0, 0, 30); });                       
                 })
                 .Build();
             return host.RunAsync();
