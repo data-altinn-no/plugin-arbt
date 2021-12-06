@@ -9,6 +9,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
     public class Metadata
     {
         private ApplicationSettings _settings;
+        private const string SERIVCECONTEXT_EBEVIS = "eBevis";
 
         public Metadata(IApplicationSettings settings)
         {
@@ -23,7 +24,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                 {
                     EvidenceCodeName = "Bemanningsforetakregisteret",
                     EvidenceSource = EvidenceSourceMetadata.SOURCE,
-                    ServiceContext = "eBevis",
+                    BelongsToServiceContexts = new List<string>() { SERIVCECONTEXT_EBEVIS },
                     AccessMethod = EvidenceAccessMethod.Open,
                     Values = new List<EvidenceValue>()
                     {
@@ -43,7 +44,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                 {
                     EvidenceCodeName = "Renholdsregisteret",
                     EvidenceSource = EvidenceSourceMetadata.SOURCE,
-                    ServiceContext = "eBevis",
+                    BelongsToServiceContexts = new List<string>() { SERIVCECONTEXT_EBEVIS },
                     AccessMethod = EvidenceAccessMethod.Open,
                     Values = new List<EvidenceValue>()
                     {
