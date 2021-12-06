@@ -23,13 +23,13 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
     {
         private ILogger _logger;
         private readonly HttpClient _client;
-        private readonly ApplicationSettings _settings;
+        private readonly IApplicationSettings _settings;
         private readonly IEvidenceSourceMetadata _metadata;
 
         public Main(IHttpClientFactory httpClientFactory, IApplicationSettings settings, IEvidenceSourceMetadata evidenceSourceMetadata)
         {
             _client = httpClientFactory.CreateClient("SafeHttpClient");
-            _settings = (ApplicationSettings)settings;
+            _settings = settings;
             _metadata = evidenceSourceMetadata;
         }
 
