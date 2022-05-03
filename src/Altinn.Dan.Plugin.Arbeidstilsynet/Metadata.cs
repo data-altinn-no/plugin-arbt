@@ -25,7 +25,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     EvidenceCodeName = "Bemanningsforetakregisteret",
                     EvidenceSource = EvidenceSourceMetadata.SOURCE,
                     BelongsToServiceContexts = new List<string>() { SERIVCECONTEXT_EBEVIS },
-                    AccessMethod = EvidenceAccessMethod.Open,
                     Values = new List<EvidenceValue>()
                     {
                         new EvidenceValue()
@@ -45,7 +44,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     EvidenceCodeName = "Renholdsregisteret",
                     EvidenceSource = EvidenceSourceMetadata.SOURCE,
                     BelongsToServiceContexts = new List<string>() { SERIVCECONTEXT_EBEVIS },
-                    AccessMethod = EvidenceAccessMethod.Open,
                     Values = new List<EvidenceValue>()
                     {
                         new EvidenceValue()
