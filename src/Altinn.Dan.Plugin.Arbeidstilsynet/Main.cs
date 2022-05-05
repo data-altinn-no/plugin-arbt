@@ -29,6 +29,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
         public Main(IHttpClientFactory httpClientFactory, IApplicationSettings settings, IEvidenceSourceMetadata evidenceSourceMetadata)
         {
             _client = httpClientFactory.CreateClient("SafeHttpClient");
+            _client.DefaultRequestHeaders.TryAddWithoutValidation("user-agent", "nadobe/data.altinn.no");
             _settings = settings;
             _metadata = evidenceSourceMetadata;
         }
@@ -87,7 +88,13 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             var ecb = new EvidenceBuilder(_metadata, "Renholdsregisteret");
             ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
             ecb.AddEvidenceValue($"Status", content.Status, EvidenceSourceMetadata.SOURCE);
-            ecb.AddEvidenceValue($"StatusEndret", Convert.ToDateTime(content.StatusEndret), EvidenceSourceMetadata.SOURCE);
+
+            var statusChanged = Convert.ToDateTime(content.StatusEndret);
+
+            if (statusChanged != DateTime.MinValue)
+            {
+                ecb.AddEvidenceValue($"StatusEndret", statusChanged, EvidenceSourceMetadata.SOURCE, false);
+            }
 
             return ecb.GetEvidenceValues();
         }
@@ -102,12 +109,20 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             }
             catch (HttpRequestException ex)
             {
+                _logger.LogError($"Target {target} exception: " + ex.Message);
                 throw new EvidenceSourcePermanentServerException(EvidenceSourceMetadata.ERROR_CCR_UPSTREAM_ERROR, null, ex);
             }
 
             if (result.StatusCode == HttpStatusCode.NotFound)
             {
+                _logger.LogInformation($"Target {target} not found");
                 throw new EvidenceSourcePermanentClientException(EvidenceSourceMetadata.ERROR_ORGANIZATION_NOT_FOUND, $"{organizationNumber} could not be found");
+            }
+
+            if (!result.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Target {target} failed with status: {result.StatusCode}" );
+                throw new EvidenceSourceTransientException(EvidenceSourceMetadata.ERROR_CCR_UPSTREAM_ERROR, $"Request could not be processed");
             }
 
             var response = JsonConvert.DeserializeObject(await result.Content.ReadAsStringAsync());
