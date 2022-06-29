@@ -61,26 +61,11 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                             EvidenceValueName = "StatusEndret",
                             ValueType = EvidenceValueType.DateTime
                         }
-                    },
-                    AuthorizationRequirements = GetArbtEbevisAuthRequirements()
+                    }
                 }
             };
 
             return a;
-        }
-
-        private List<Requirement> GetArbtEbevisAuthRequirements()
-        {
-            return new List<Requirement>()
-                {
-                    new PartyTypeRequirement()
-                    {
-                        AllowedPartyTypes = new AllowedPartyTypesList()
-                        {
-                            new KeyValuePair<AccreditationPartyTypes, PartyTypeConstraint>(AccreditationPartyTypes.Requestor,PartyTypeConstraint.PublicAgency)
-                        }
-                    }
-                };
         }
     }
 
