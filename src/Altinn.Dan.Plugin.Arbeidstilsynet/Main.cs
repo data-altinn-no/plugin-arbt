@@ -1,14 +1,12 @@
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Altinn.Dan.Plugin.Arbeidstilsynet.Utils;
-using Microsoft.AspNetCore.Mvc;
+using Dan.Common.Exceptions;
+using Dan.Common.Interfaces;
+using Dan.Common.Models;
+using Dan.Common.Util;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using Nadobe;
-using Nadobe.Common.Exceptions;
-using Nadobe.Common.Interfaces;
-using Nadobe.Common.Models;
-using Nadobe.Common.Util;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -16,6 +14,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Dan.Common;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
@@ -44,10 +43,8 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var evidenceHarvesterRequest = JsonConvert.DeserializeObject<EvidenceHarvesterRequest>(requestBody);
 
-            var actionResult = await EvidenceSourceResponse.CreateResponse(null, () => GetEvidenceValuesBemanning(evidenceHarvesterRequest)) as ObjectResult;
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(actionResult?.Value);
-            return response;
+            return await EvidenceSourceResponse.CreateResponse(req, () => GetEvidenceValuesBemanning(evidenceHarvesterRequest));
+  
         }
 
         private async Task<List<EvidenceValue>> GetEvidenceValuesBemanning(EvidenceHarvesterRequest evidenceHarvesterRequest)
@@ -73,10 +70,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var evidenceHarvesterRequest = JsonConvert.DeserializeObject<EvidenceHarvesterRequest>(requestBody);
 
-            var actionResult = await EvidenceSourceResponse.CreateResponse(null, () => GetEvidenceValuesRenhold(evidenceHarvesterRequest)) as ObjectResult;
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            await response.WriteAsJsonAsync(actionResult?.Value);
-            return response;
+            return  await EvidenceSourceResponse.CreateResponse(req, () => GetEvidenceValuesRenhold(evidenceHarvesterRequest));
         }
 
         private async Task<List<EvidenceValue>> GetEvidenceValuesRenhold(EvidenceHarvesterRequest evidenceHarvesterRequest)

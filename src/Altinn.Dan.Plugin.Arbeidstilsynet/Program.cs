@@ -1,12 +1,13 @@
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
+using Dan.Common.Compat;
+using Dan.Common.Extensions;
+using Dan.Common.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Nadobe.Common.Interfaces;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Nadobe.Common.Util;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
@@ -17,7 +18,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
         private static Task Main(string[] args)
         {
             var host = new HostBuilder()
-                .ConfigureFunctionsWorkerDefaults()
+                .ConfigureDanPluginDefaults()
                 .ConfigureServices(services =>
                 {
                     services.AddLogging();

@@ -1,7 +1,7 @@
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
-using Nadobe.Common.Interfaces;
-using Nadobe.Common.Models;
-using Nadobe.Common.Models.Enums;
+using Dan.Common.Enums;
+using Dan.Common.Interfaces;
+using Dan.Common.Models;
 using System.Collections.Generic;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet

@@ -1,5 +1,5 @@
 using Altinn.Dan.Plugin.Arbeidstilsynet.Models;
-using Nadobe.Common.Exceptions;
+using Dan.Common.Exceptions;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
