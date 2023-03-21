@@ -1,8 +1,6 @@
-using System;
-
 namespace Altinn.Dan.Plugin.Arbeidstilsynet.Config
 {
-    public class ApplicationSettings : IApplicationSettings
+    public class ApplicationSettings
     {
         public static ApplicationSettings ApplicationConfig;
 
@@ -11,14 +9,13 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet.Config
             ApplicationConfig = this;
         }
 
-        public string BemanningUrl
-        {
-            get { return Environment.GetEnvironmentVariable("BemanningUrl"); }
-        }
+        public string BemanningUrl { get; set; }
 
-        public string RenholdUrl
-        {
-            get { return Environment.GetEnvironmentVariable("RenholdUrl"); }
-        }
+
+        public string RenholdUrl { get; set; }  
+
+        public string BilpleieURl { get; set; }
+
+        public bool IsTest { get; set; }
     }
 }
