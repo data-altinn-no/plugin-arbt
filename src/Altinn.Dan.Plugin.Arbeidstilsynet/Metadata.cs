@@ -1,19 +1,18 @@
-using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Dan.Common.Enums;
 using Dan.Common.Interfaces;
 using Dan.Common.Models;
 using System.Collections.Generic;
 
+
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
-    public class Metadata
+    public class Metadata : IEvidenceSourceMetadata
     {
-        private ApplicationSettings _settings;
         private const string SERIVCECONTEXT_EBEVIS = "eBevis";
+        private const string ARBT = "Arbeidstilsynet";
 
-        public Metadata(IApplicationSettings settings)
+        public Metadata()
         {
-            _settings = (ApplicationSettings)settings;
         }
 
         public List<EvidenceCode> GetEvidenceCodes()
@@ -30,12 +29,14 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                         new EvidenceValue()
                         {
                             EvidenceValueName = "Organisasjonsnummer",
-                            ValueType = EvidenceValueType.String
+                            ValueType = EvidenceValueType.String,
+                            Source = ARBT
                         },
                         new EvidenceValue()
                         {
                             EvidenceValueName = "Godkjenningsstatus",
-                            ValueType = EvidenceValueType.String
+                            ValueType = EvidenceValueType.String,
+                            Source = ARBT
                         }
                     }
                 },
@@ -49,18 +50,54 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                         new EvidenceValue()
                         {
                             EvidenceValueName = "Organisasjonsnummer",
-                            ValueType = EvidenceValueType.String
+                            ValueType = EvidenceValueType.String,
+                            Source = ARBT 
                         },
                         new EvidenceValue()
                         {
                             EvidenceValueName = "Status",
-                            ValueType = EvidenceValueType.String
+                            ValueType = EvidenceValueType.String,
+                            Source = ARBT
                         },
                         new EvidenceValue()
                         {
                             EvidenceValueName = "StatusEndret",
-                            ValueType = EvidenceValueType.DateTime
+                            ValueType = EvidenceValueType.DateTime,
+                            Source = ARBT
                         }
+                    }
+                },
+                new EvidenceCode()
+                {
+                    EvidenceCodeName = "Bilpleieregisteret",
+                    EvidenceSource = EvidenceSourceMetadata.SOURCE,
+                    BelongsToServiceContexts = new List<string>() { SERIVCECONTEXT_EBEVIS },
+                    Values = new List<EvidenceValue>()
+                    {
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "organisasjonsnummer",
+                            ValueType = EvidenceValueType.String,
+                            Source = ARBT
+                        },
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "registerstatus",
+                            ValueType = EvidenceValueType.String,
+                            Source = ARBT
+                        },
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "registerstatusTekst",
+                            ValueType = EvidenceValueType.String,
+                            Source = ARBT
+                        },
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "godkjenningsstatus",
+                            ValueType = EvidenceValueType.String,
+                            Source = ARBT
+                        },
                     }
                 }
             };
@@ -91,16 +128,9 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
         public const int ERROR_CERTIFICATE_OF_REGISTRATION_NOT_AVAILABLE = 9;
 
-        private ApplicationSettings _settings;
-
-        public EvidenceSourceMetadata(IApplicationSettings settings)
-        {
-            _settings = (ApplicationSettings)settings;
-        }
-
         public List<EvidenceCode> GetEvidenceCodes()
         {
-            return (new Metadata(_settings)).GetEvidenceCodes();
+            return new Metadata().GetEvidenceCodes();
         }
     }
 }

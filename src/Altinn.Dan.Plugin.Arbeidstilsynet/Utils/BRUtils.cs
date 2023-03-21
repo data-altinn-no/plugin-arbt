@@ -16,7 +16,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet.Utils
             if (org != null && !string.IsNullOrEmpty(org.OverordnetEnhet))
                 return await GetMainUnit(org.OverordnetEnhet, client);
 
-            if (org == null)
+            if (org == null || org.Organisasjonsnummer == 0)
             {
                 throw new EvidenceSourcePermanentClientException(
                             EvidenceSourceMetadata.ERROR_ORGANIZATION_NOT_FOUND,
