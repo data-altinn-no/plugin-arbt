@@ -143,16 +143,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             ecb.AddEvidenceValue("registerstatusTekst", registerstatustekst, EvidenceSourceMetadata.SOURCE);
             ecb.AddEvidenceValue("godkjenningsstatus", godkjenningsstatus, EvidenceSourceMetadata.SOURCE);
 
-        }
-
-        private List<EvidenceValue> CreateEvidenceResponse(string orgno, int registerstatus, string registerstatustekst, string godkjenningsstatus)
-        {
-            var ecb = new EvidenceBuilder(_metadata, "Bilpleieregisteret");
-            ecb.AddEvidenceValue("organisasjonsnummer", orgno, EvidenceSourceMetadata.SOURCE);
-            ecb.AddEvidenceValue("registerstatus", registerstatus, EvidenceSourceMetadata.SOURCE);
-            ecb.AddEvidenceValue("registerstatusTekst", registerstatustekst, EvidenceSourceMetadata.SOURCE);
-            ecb.AddEvidenceValue("godkjenningsstatus", godkjenningsstatus, EvidenceSourceMetadata.SOURCE);
-
             return ecb.GetEvidenceValues();
         }
 
