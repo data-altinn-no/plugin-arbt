@@ -23,13 +23,13 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
     public class Main
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
         private readonly HttpClient _client;
         private readonly ApplicationSettings _settings;
         private readonly IEvidenceSourceMetadata _metadata;
         private readonly IEntityRegistryService _entityRegistryService;
 
-        private const int NOTFOUND = 1001;
+        private const int NOT_FOUND = 1001;
 
         public Main(IHttpClientFactory httpClientFactory, IOptions<ApplicationSettings> settings, IEvidenceSourceMetadata evidenceSourceMetadata, ILoggerFactory loggerFactory, IEntityRegistryService entityRegistryService)
         {
@@ -127,7 +127,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                 if (unit != null)
                     return CreateEvidenceResponse(unit.organisasjonsnummer, unit.registerstatus, unit.registerstatusTekst, unit.godkjenningsstatus);
                 else
-                    throw new EvidenceSourcePermanentServerException(NOTFOUND, "Not found");
+                    throw new EvidenceSourcePermanentServerException(NOT_FOUND, "Not found");
             }
             else
             {
@@ -179,10 +179,8 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
         [Function(Constants.EvidenceSourceMetadataFunctionName)]
         public async Task<HttpResponseData> Metadata(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
-            HttpRequestData req, FunctionContext context)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequestData req, FunctionContext context)
         {
-            _logger = context.GetLogger(context.FunctionDefinition.Name);
             _logger.LogInformation($"Running metadata for {Constants.EvidenceSourceMetadataFunctionName}");
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(_metadata.GetEvidenceCodes());
