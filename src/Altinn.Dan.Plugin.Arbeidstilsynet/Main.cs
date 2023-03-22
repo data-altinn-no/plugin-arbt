@@ -133,6 +133,15 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             {
                 return CreateEvidenceResponse(result.data.organisasjonsnummer, result.data.registerstatus, result.data.registerstatusTekst, result.data.godkjenningsstatus);
             }
+        }
+
+        private List<EvidenceValue> CreateEvidenceResponse(string orgno, int registerstatus, string registerstatustekst, string godkjenningsstatus)
+        {
+            var ecb = new EvidenceBuilder(_metadata, "Bilpleieregisteret");
+            ecb.AddEvidenceValue("organisasjonsnummer", orgno, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue("registerstatus", registerstatus, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue("registerstatusTekst", registerstatustekst, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue("godkjenningsstatus", godkjenningsstatus, EvidenceSourceMetadata.SOURCE);
 
         }
 
@@ -166,8 +175,8 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             var ecb = new EvidenceBuilder(_metadata, "Renholdsregisteret");
             ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
             ecb.AddEvidenceValue($"Status", content.Status, EvidenceSourceMetadata.SOURCE);
-
-            var statusChanged = Convert.ToDateTime(content.StatusEndret);
+           
+           var statusChanged = Convert.ToDateTime(content.StatusEndret);
 
             if (statusChanged != DateTime.MinValue)
             {

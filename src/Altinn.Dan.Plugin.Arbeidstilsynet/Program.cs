@@ -11,7 +11,6 @@ var host = new HostBuilder()
         .ConfigureServices((context, services) =>
         {
             services.Configure<ApplicationSettings>(context.Configuration);
-            
         })
         .Build();
 await host.RunAsync();
