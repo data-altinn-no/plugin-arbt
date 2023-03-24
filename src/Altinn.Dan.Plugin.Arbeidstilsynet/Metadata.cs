@@ -3,21 +3,19 @@ using Dan.Common.Interfaces;
 using Dan.Common.Models;
 using System.Collections.Generic;
 
-
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
 {
-    public class Metadata : IEvidenceSourceMetadata
+    public class EvidenceSourceMetadata : IEvidenceSourceMetadata
     {
+        public const string SOURCE = "Arbeidstilsynet";
+        public const int ERROR_ORGANIZATION_NOT_FOUND = 1;
+        public const int ERROR_CCR_UPSTREAM_ERROR = 2;
         private const string SERIVCECONTEXT_EBEVIS = "eBevis";
         private const string ARBT = "Arbeidstilsynet";
 
-        public Metadata()
-        {
-        }
-
         public List<EvidenceCode> GetEvidenceCodes()
         {
-            var a = new List<EvidenceCode>()
+            return new List<EvidenceCode>()
             {
                 new EvidenceCode()
                 {
@@ -51,7 +49,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                         {
                             EvidenceValueName = "Organisasjonsnummer",
                             ValueType = EvidenceValueType.String,
-                            Source = ARBT 
+                            Source = ARBT
                         },
                         new EvidenceValue()
                         {
@@ -101,36 +99,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     }
                 }
             };
-
-            return a;
-        }
-    }
-
-    public class EvidenceSourceMetadata : IEvidenceSourceMetadata
-    {
-        public const string SOURCE = "Arbeidstilsynet";
-
-        public const int ERROR_ORGANIZATION_NOT_FOUND = 1;
-
-        public const int ERROR_CCR_UPSTREAM_ERROR = 2;
-
-        public const int ERROR_NO_REPORT_AVAILABLE = 3;
-
-        public const int ERROR_ASYNC_REQUIRED_PARAMS_MISSING = 4;
-
-        public const int ERROR_ASYNC_ALREADY_INITIALIZED = 5;
-
-        public const int ERROR_ASYNC_NOT_INITIALIZED = 6;
-
-        public const int ERROR_AYNC_STATE_STORAGE = 7;
-
-        public const int ERROR_ASYNC_HARVEST_NOT_AVAILABLE = 8;
-
-        public const int ERROR_CERTIFICATE_OF_REGISTRATION_NOT_AVAILABLE = 9;
-
-        public List<EvidenceCode> GetEvidenceCodes()
-        {
-            return new Metadata().GetEvidenceCodes();
         }
     }
 }

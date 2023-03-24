@@ -1,6 +1,5 @@
 using Altinn.Dan.Plugin.Arbeidstilsynet.Config;
 using Altinn.Dan.Plugin.Arbeidstilsynet.Models;
-using Altinn.Dan.Plugin.Arbeidstilsynet.Utils;
 using Dan.Common;
 using Dan.Common.Exceptions;
 using Dan.Common.Interfaces;
@@ -25,16 +24,18 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
     {
         private readonly ILogger _logger;
         private readonly HttpClient _client;
-        private readonly ApplicationSettings _settings;
+        private readonly Settings _settings;
         private readonly IEvidenceSourceMetadata _metadata;
         private readonly IEntityRegistryService _entityRegistryService;
 
-        private const int NOT_FOUND = 1001;
+        private const int ERROR_NOT_FOUND = 1001;
+        private const int ERROR_INVALID_ORG = 1002;
+        private const int ERROR_OTHER = 1003;
 
-        public Main(IHttpClientFactory httpClientFactory, IOptions<ApplicationSettings> settings, IEvidenceSourceMetadata evidenceSourceMetadata, ILoggerFactory loggerFactory, IEntityRegistryService entityRegistryService)
+        public Main(IHttpClientFactory httpClientFactory, IOptions<Settings> settings, IEvidenceSourceMetadata evidenceSourceMetadata, ILoggerFactory loggerFactory, IEntityRegistryService entityRegistryService)
         {
             _client = httpClientFactory.CreateClient("SafeHttpClient");
-            _client.DefaultRequestHeaders.TryAddWithoutValidation("user-agent", "nadobe/data.altinn.no");
+            _client.DefaultRequestHeaders.TryAddWithoutValidation("user-agent", "nadobe/data.altinn.no"); // Source requires any user-agent to be set
             _settings = settings.Value;
             _metadata = evidenceSourceMetadata;
             _logger = loggerFactory.CreateLogger<Main>();
@@ -46,7 +47,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequestData req, FunctionContext context)
         {
-            _logger.LogInformation("Running func 'Bemanning'");
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var evidenceHarvesterRequest = JsonConvert.DeserializeObject<EvidenceHarvesterRequest>(requestBody);
 
@@ -55,19 +55,33 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
         private async Task<List<EvidenceValue>> GetEvidenceValuesBemanning(EvidenceHarvesterRequest evidenceHarvesterRequest)
         {
-            BREntityRegisterEntry actualOrganization = null;
+            SimpleEntityRegistryUnit actualOrganization;
+
+            if (evidenceHarvesterRequest.SubjectParty?.NorwegianOrganizationNumber is null)
+            {
+                throw new EvidenceSourcePermanentClientException(ERROR_INVALID_ORG,
+                    "Expected a norwegian organization number");
+            }
 
             if (_settings.IsTest)
             {
-                actualOrganization = new BREntityRegisterEntry() { Organisasjonsnummer = long.Parse(evidenceHarvesterRequest.SubjectParty.NorwegianOrganizationNumber) };
+                actualOrganization = new SimpleEntityRegistryUnit { OrganizationNumber = evidenceHarvesterRequest.SubjectParty.NorwegianOrganizationNumber };
             }
             else
             {
-                //The registry only has main units, so we have to traverse the enterprise structure in case the subject of the lookup is a subunit
-                actualOrganization = await BRUtils.GetMainUnit(evidenceHarvesterRequest.SubjectParty.NorwegianOrganizationNumber, _client);
+                // The registry only has main units, so we have to traverse the enterprise structure in case the subject of the lookup is a subunit
+                actualOrganization =
+                    await _entityRegistryService.GetMainUnit(evidenceHarvesterRequest.SubjectParty
+                        .NorwegianOrganizationNumber);
             }
 
-            var bemanning = await Helpers.MakeRequest<Bemanning>(_client, string.Format(_settings.BemanningUrl, actualOrganization.Organisasjonsnummer), actualOrganization.Organisasjonsnummer.ToString(), _logger);
+            if (actualOrganization is null)
+            {
+                throw new EvidenceSourcePermanentClientException(ERROR_NOT_FOUND,
+                    "Organization number not found in CCR");
+            }
+
+            var bemanning = await MakeRequest<Bemanning>(string.Format(_settings.BemanningUrl, actualOrganization.OrganizationNumber));
 
             var ecb = new EvidenceBuilder(_metadata, "Bemanningsforetakregisteret");
             ecb.AddEvidenceValue($"Organisasjonsnummer", bemanning.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
@@ -81,7 +95,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequestData req, FunctionContext context)
         {
-            _logger.LogInformation("Running func 'Renhold'");
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var evidenceHarvesterRequest = JsonConvert.DeserializeObject<EvidenceHarvesterRequest>(requestBody);
 
@@ -93,7 +106,6 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequestData req, FunctionContext context)
         {
-            _logger.LogInformation("Running func 'Bilpleie'");
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var evidenceHarvesterRequest = JsonConvert.DeserializeObject<EvidenceHarvesterRequest>(requestBody);
 
@@ -102,10 +114,14 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
         private async Task<List<EvidenceValue>> GetEvidenceValuesBilpleie(EvidenceHarvesterRequest evidenceHarvesterRequest)
         {
-            BilpleieArbt result = null;
-            Enhet unit = null;
+            if (evidenceHarvesterRequest.SubjectParty?.NorwegianOrganizationNumber is null)
+            {
+                throw new EvidenceSourcePermanentClientException(ERROR_INVALID_ORG,
+                    "Expected a norwegian organization number");
+            }
+
             //The registry only has main units, so we have to traverse the enterprise structure in case the subject of the lookup is a subunit
-            string actualOrgNo = null;
+            string actualOrgNo;
 
             if (_settings.IsTest)
             {
@@ -114,25 +130,31 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             }
             else
             {
-                var main = await BRUtils.GetMainUnit(evidenceHarvesterRequest.OrganizationNumber, _client);
-                actualOrgNo = main.Organisasjonsnummer.ToString();
+                var main = await _entityRegistryService.GetMainUnit(evidenceHarvesterRequest.SubjectParty
+                    .NorwegianOrganizationNumber);
+
+                if (main is null)
+                {
+                    throw new EvidenceSourcePermanentClientException(ERROR_NOT_FOUND,
+                        "Organization number not found in CCR");
+                }
+
+                actualOrgNo = main.OrganizationNumber;
             }
 
-            result = await Helpers.MakeRequest<BilpleieArbt>(_client, string.Format(_settings.BilpleieURl, actualOrgNo), evidenceHarvesterRequest.OrganizationNumber, _logger);
+            var result = await MakeRequest<BilpleieArbt>(string.Format(_settings.BilpleieURl, actualOrgNo));
 
             if (actualOrgNo != evidenceHarvesterRequest.SubjectParty.NorwegianOrganizationNumber) //subject is not main unit
             {
-                unit = result.data.underenheter.FirstOrDefault(x => x.organisasjonsnummer == evidenceHarvesterRequest.OrganizationNumber);
-
+                var unit = result.data.underenheter.FirstOrDefault(x => x.organisasjonsnummer == evidenceHarvesterRequest.OrganizationNumber);
                 if (unit != null)
+                {
                     return CreateEvidenceResponse(unit.organisasjonsnummer, unit.registerstatus, unit.registerstatusTekst, unit.godkjenningsstatus);
-                else
-                    throw new EvidenceSourcePermanentServerException(NOT_FOUND, "Not found");
+                }
+                throw new EvidenceSourcePermanentServerException(ERROR_NOT_FOUND, "Not found");
             }
-            else
-            {
-                return CreateEvidenceResponse(result.data.organisasjonsnummer, result.data.registerstatus, result.data.registerstatusTekst, result.data.godkjenningsstatus);
-            }
+
+            return CreateEvidenceResponse(result.data.organisasjonsnummer, result.data.registerstatus, result.data.registerstatusTekst, result.data.godkjenningsstatus);
         }
 
         private List<EvidenceValue> CreateEvidenceResponse(string orgno, int registerstatus, string registerstatustekst, string godkjenningsstatus)
@@ -148,24 +170,37 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
 
         private async Task<List<EvidenceValue>> GetEvidenceValuesRenhold(EvidenceHarvesterRequest evidenceHarvesterRequest)
         {
-            BREntityRegisterEntry actualOrganization = null;
+
+            if (evidenceHarvesterRequest.SubjectParty?.NorwegianOrganizationNumber is null)
+            {
+                throw new EvidenceSourcePermanentClientException(ERROR_INVALID_ORG,
+                    "Expected a norwegian organization number");
+            }
+
+            SimpleEntityRegistryUnit actualOrganization;
 
             if (_settings.IsTest)
             {
-                actualOrganization = new BREntityRegisterEntry() { Organisasjonsnummer = long.Parse(evidenceHarvesterRequest.SubjectParty.NorwegianOrganizationNumber) };
+                actualOrganization = new SimpleEntityRegistryUnit { OrganizationNumber = evidenceHarvesterRequest.SubjectParty.NorwegianOrganizationNumber };
             }
             else
             {
                 //The registry only has main units, so we have to traverse the enterprise structure in case the subject of the lookup is a subunit
-                actualOrganization = await BRUtils.GetMainUnit(evidenceHarvesterRequest.SubjectParty.NorwegianOrganizationNumber, _client);
+                actualOrganization = await _entityRegistryService.GetMainUnit(evidenceHarvesterRequest.SubjectParty.NorwegianOrganizationNumber);
+
+                if (actualOrganization is null)
+                {
+                    throw new EvidenceSourcePermanentClientException(ERROR_NOT_FOUND,
+                        "Organization number not found in CCR");
+                }
             }
 
-            var content = await Helpers.MakeRequest<Renhold>(_client, string.Format(_settings.RenholdUrl, actualOrganization.Organisasjonsnummer), actualOrganization.Organisasjonsnummer.ToString(), _logger);
+            var content = await MakeRequest<Renhold>(string.Format(_settings.RenholdUrl, actualOrganization.OrganizationNumber));
 
             var ecb = new EvidenceBuilder(_metadata, "Renholdsregisteret");
             ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
             ecb.AddEvidenceValue($"Status", content.Status, EvidenceSourceMetadata.SOURCE);
-           
+
            var statusChanged = Convert.ToDateTime(content.StatusEndret);
 
             if (statusChanged != DateTime.MinValue)
@@ -176,11 +211,49 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             return ecb.GetEvidenceValues();
         }
 
+        private async Task<T> MakeRequest<T>(string url, string versionHeader = null) where T: new()
+        {
+            HttpResponseMessage result;
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+                if (versionHeader != null)
+                    request.Headers.TryAddWithoutValidation("Content-Version", "1.1");
+
+                result = await _client.SendAsync(request);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError("Target {url} exception: {ex}", url, ex.Message);
+                throw new EvidenceSourceTransientException(ERROR_OTHER, ex.Message, ex);
+            }
+
+            if (result.StatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogInformation("Target {url} not found", url);
+                throw new EvidenceSourcePermanentClientException(ERROR_NOT_FOUND, "Upstream returned 404");
+            }
+
+            if (!result.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Target {url} failed with status: {statusCode}", url, result.StatusCode);
+                throw new EvidenceSourceTransientException(ERROR_OTHER, $"Upstream returned {result.StatusCode}");
+            }
+
+            var response = JsonConvert.DeserializeObject<T>(await result.Content.ReadAsStringAsync());
+            if (response == null)
+            {
+                throw new EvidenceSourceTransientException(ERROR_OTHER, "Failed to parse data model returned from upstream source");
+            }
+
+            return response;
+        }
+
         [Function(Constants.EvidenceSourceMetadataFunctionName)]
         public async Task<HttpResponseData> Metadata(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequestData req, FunctionContext context)
         {
-            _logger.LogInformation($"Running metadata for {Constants.EvidenceSourceMetadataFunctionName}");
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteAsJsonAsync(_metadata.GetEvidenceCodes());
             return response;
