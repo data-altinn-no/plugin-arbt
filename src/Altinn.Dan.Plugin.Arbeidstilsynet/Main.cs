@@ -84,8 +84,8 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             var bemanning = await MakeRequest<Bemanning>(string.Format(_settings.BemanningUrl, actualOrganization.OrganizationNumber));
 
             var ecb = new EvidenceBuilder(_metadata, "Bemanningsforetakregisteret");
-            ecb.AddEvidenceValue($"Organisasjonsnummer", bemanning.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
-            ecb.AddEvidenceValue($"Godkjenningsstatus", bemanning.Godkjenningsstatus, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue($"organisasjonsnummer", bemanning.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue($"godkjenningsstatus", bemanning.Godkjenningsstatus, EvidenceSourceMetadata.SOURCE);
 
             return ecb.GetEvidenceValues();
         }
@@ -198,14 +198,14 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             var content = await MakeRequest<Renhold>(string.Format(_settings.RenholdUrl, actualOrganization.OrganizationNumber));
 
             var ecb = new EvidenceBuilder(_metadata, "Renholdsregisteret");
-            ecb.AddEvidenceValue($"Organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
-            ecb.AddEvidenceValue($"Status", content.Status, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue($"organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
+            ecb.AddEvidenceValue($"status", content.Status, EvidenceSourceMetadata.SOURCE);
 
            var statusChanged = Convert.ToDateTime(content.StatusEndret);
 
             if (statusChanged != DateTime.MinValue)
             {
-                ecb.AddEvidenceValue($"StatusEndret", statusChanged, EvidenceSourceMetadata.SOURCE, false);
+                ecb.AddEvidenceValue($"statusEndret", statusChanged, EvidenceSourceMetadata.SOURCE, false);
             }
 
             return ecb.GetEvidenceValues();

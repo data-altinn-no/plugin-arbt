@@ -26,13 +26,13 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     {
                         new EvidenceValue()
                         {
-                            EvidenceValueName = "Organisasjonsnummer",
+                            EvidenceValueName = "organisasjonsnummer",
                             ValueType = EvidenceValueType.String,
                             Source = ARBT
                         },
                         new EvidenceValue()
                         {
-                            EvidenceValueName = "Godkjenningsstatus",
+                            EvidenceValueName = "godkjenningsstatus",
                             ValueType = EvidenceValueType.String,
                             Source = ARBT
                         }
@@ -47,19 +47,19 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                     {
                         new EvidenceValue()
                         {
-                            EvidenceValueName = "Organisasjonsnummer",
+                            EvidenceValueName = "organisasjonsnummer",
                             ValueType = EvidenceValueType.String,
                             Source = ARBT
                         },
                         new EvidenceValue()
                         {
-                            EvidenceValueName = "Status",
+                            EvidenceValueName = "status",
                             ValueType = EvidenceValueType.String,
                             Source = ARBT
                         },
                         new EvidenceValue()
                         {
-                            EvidenceValueName = "StatusEndret",
+                            EvidenceValueName = "statusEndret",
                             ValueType = EvidenceValueType.DateTime,
                             Source = ARBT
                         }
