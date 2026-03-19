@@ -17,4 +17,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Altinn.Dan.Plugin.Arbeidstilsynet\Altinn.Dan.Plugin.Arbeidstilsynet.csproj" />
+  </ItemGroup>
+
 </Project>
