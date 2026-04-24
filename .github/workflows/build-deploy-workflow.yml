@@ -10,11 +10,11 @@ on:
 
 jobs:
   run:
-  permissions:
-    actions: read
-    contents: read
-    checks: write
-    pull-requests: write
+    permissions:
+      actions: read
+      contents: read
+      checks: write
+      pull-requests: write
     uses: data-altinn-no/deploy-actions/.github/workflows/dan-deploy-flow.yml@61a7edd132ef73dbb446086d01ac0557dc28e258
     with:
       artifact_name: 'dan-plugin-arbt' # Can be omitted, defaults to 'artifact'
