@@ -25,7 +25,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet.Models
     public class BilpleieregisterResult
     {
         public string organisasjonsnummer { get; set; }
-        public int registerstatus { get; set; }
+        public string registerstatus { get; set; }
         public string registerstatusTekst { get; set; }
         public string godkjenningsstatus { get; set; }
     }
