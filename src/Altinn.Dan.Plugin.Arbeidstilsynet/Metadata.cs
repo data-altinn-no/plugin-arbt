@@ -1,6 +1,8 @@
+using Altinn.Dan.Plugin.Arbeidstilsynet.Models;
 using Dan.Common.Enums;
 using Dan.Common.Interfaces;
 using Dan.Common.Models;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace Altinn.Dan.Plugin.Arbeidstilsynet
@@ -35,6 +37,13 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                             EvidenceValueName = "godkjenningsstatus",
                             ValueType = EvidenceValueType.String,
                             Source = ARBT
+                        },
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "default",
+                            ValueType = EvidenceValueType.JsonSchema,
+                            JsonSchemaDefintion = EvidenceValue.SchemaFromObject<Bemanning>(Formatting.Indented),
+                            Source = ARBT
                         }
                     }
                 },
@@ -61,6 +70,13 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                         {
                             EvidenceValueName = "statusEndret",
                             ValueType = EvidenceValueType.DateTime,
+                            Source = ARBT
+                        },
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "default",
+                            ValueType = EvidenceValueType.JsonSchema,
+                            JsonSchemaDefintion = EvidenceValue.SchemaFromObject<Renhold>(Formatting.Indented),
                             Source = ARBT
                         }
                     }
@@ -96,6 +112,13 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                             ValueType = EvidenceValueType.String,
                             Source = ARBT
                         },
+                        new EvidenceValue()
+                        {
+                            EvidenceValueName = "default",
+                            ValueType = EvidenceValueType.JsonSchema,
+                            JsonSchemaDefintion = EvidenceValue.SchemaFromObject<BilpleieregisterResult>(Formatting.Indented),
+                            Source = ARBT
+                        }
                     }
                 }
             };
