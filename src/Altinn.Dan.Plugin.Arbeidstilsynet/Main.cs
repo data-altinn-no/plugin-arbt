@@ -195,7 +195,7 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
                 }
             }
 
-            var content = await MakeRequest<Renhold>(string.Format(_settings.RenholdUrl, actualOrganization.OrganizationNumber));
+            var content = await MakeRequest<Renhold>(GetProxiedUrl(string.Format(_settings.RenholdUrl, actualOrganization.OrganizationNumber)));
 
             var ecb = new EvidenceBuilder(_metadata, "Renholdsregisteret");
             ecb.AddEvidenceValue($"organisasjonsnummer", content.Organisasjonsnummer, EvidenceSourceMetadata.SOURCE);
@@ -209,6 +209,21 @@ namespace Altinn.Dan.Plugin.Arbeidstilsynet
             }
 
             return ecb.GetEvidenceValues();
+        }
+
+        /// <summary>
+        /// Routes the given target URL through the configured proxy. ProxyUrl is a format string where {0} is replaced
+        /// with the target URL without its scheme, e.g. "https://proxy.example.com/{0}". Returns the target URL
+        /// unchanged if no proxy is configured.
+        /// </summary>
+        private string GetProxiedUrl(string targetUrl)
+        {
+            if (string.IsNullOrWhiteSpace(_settings.ProxyUrl))
+            {
+                return targetUrl;
+            }
+
+            return string.Format(_settings.ProxyUrl, targetUrl.Replace("https://", ""));
         }
 
         private async Task<T> MakeRequest<T>(string url, string versionHeader = null) where T: new()
